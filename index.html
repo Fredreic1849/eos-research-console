@@ -32,7 +32,7 @@
           <h1>EOS 发言完成检测</h1>
           <p>判断流式生成中的台词是否已按要求说完，为切换到倾听提供信号。</p>
           <p class="project-state"><strong>RAVEN 与 Speaker 离线对照已完成</strong><br>独立在线首停、跨域迁移与音画质量仍待验收。</p>
-          <div class="actions"><a class="button primary" href="quality/">打开数据质检 <span aria-hidden="true">→</span></a><a class="text-link" href="#evaluation">查看评测矩阵</a></div>
+          <div class="actions"><a class="button primary" href="quality/">打开数据质检 <span aria-hidden="true">→</span></a><a class="text-link" href="#motivation">为什么需要 EOS？</a></div>
         </div>
         <div class="hero-chart">
           <h2>离线首停命中 <span>固定阈值 0.5</span></h2>
@@ -48,6 +48,15 @@
         <a href="#training"><strong>模型与训练</strong><small>137 个历史模型或策略</small></a>
         <a href="#open"><strong>待核验事项</strong><small>在线首停、H/L 与训练准入</small></a>
       </nav>
+      <section id="motivation">
+        <div class="section-head"><h2>为什么需要 EOS？</h2><p>流式音视频生成需要知道台词何时说完，才能把角色从发言切换到安静倾听。</p></div>
+        <div class="callout"><b>生成预算与说完时间</b><p>开放环按预设时长继续生成。台词如果提前说完，角色仍可能在停顿后重说。遇到句中停顿就切换，又可能截断剩余台词。我们用 EOS Head 将已到达的音频特征与目标文本对照，判断当前发言所要求的内容和次数是否首次完成，再把这个信号交给生成器切换状态。</p></div>
+        <div class="pair motivation-examples">
+          <article class="panel"><h3>短句 · 停顿后再次开口</h3><p>输入要求只读一遍，生成窗口约 10 秒。整段 Whisper Base 识别到 4 个候选，约在 0.00、1.14、6.06、8.12 秒开始。同一音轨的整段 small.en 只识别 1 次，按 Base 时间戳分段后，4 段均识别到目标短句。</p></article>
+          <article class="panel"><h3>长句 · 多次重启整句话</h3><p>输入同样要求只读一遍，生成窗口约 15 秒。Whisper Base 识别到 3 个整句候选，约在 0.54、4.74、9.08 秒开始。转写在单词断开处有拼写差异。</p></article>
+        </div>
+        <p class="motivation-note">这两条是开放环生成的失败案例，次数和时间来自离线 ASR。视频、实际输入和逐段转写可在本机样本审阅的「重复发言示例」查看。</p>
+      </section>
       <section id="data">
         <div class="section-head"><h2>数据与标签</h2><p>生成轨迹与真实原片分开统计。</p></div>
         <div class="pair">

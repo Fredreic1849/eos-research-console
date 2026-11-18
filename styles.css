@@ -87,6 +87,15 @@ main > section { margin-top: 40px; }
 .section-head p, .panel p, .explain { color: var(--muted); }
 .section-head p { margin-top: 5px; }
 .pair, .open-grid, .eval-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.motivation-examples { margin-top: 12px; }
+.motivation-note { margin-top: 10px; color: var(--muted); font-size: 13px; }
+.demo-video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #1e2c27; border-radius: 6px; margin: 12px 0; }
+.demo-case h4 { margin: 14px 0 4px; font-size: 15px; }
+.demo-case blockquote { margin: 5px 0 12px; padding-left: 10px; border-left: 2px solid var(--line); }
+.demo-case ol { margin: 6px 0 10px; padding-left: 1.45rem; }
+.demo-case time { font-variant-numeric: tabular-nums; font-weight: 680; }
+.demo-case details { margin-top: 12px; }
+.demo-case summary { color: var(--accent); font-weight: 680; cursor: pointer; }
 .panel { min-width: 0; padding: 15px 17px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); }
 .panel p { margin-top: 6px; }
 .panel dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin: 10px 0 5px; }
