@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="RAVEN 与 Speaker 的发言完成检测研究，涵盖数据、训练、逐步评测和逐日实验日志。">
+  <meta name="theme-color" content="#f5f7fb">
+  <title>EOS 研究总览</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="research.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#overview">跳到正文</a>
+  <div class="shell">
+    <aside class="rail">
+      <a class="brand" href="#overview"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>EOS<span class="brand-sub">研究总览</span></span></a>
+      <nav aria-label="章节">
+        <a href="#overview" aria-current="location"><span aria-hidden="true">◈</span>概览</a>
+        <a href="#data"><span aria-hidden="true">▤</span>数据与标签</a>
+        <a href="#training"><span aria-hidden="true">▣</span>模型与训练</a>
+        <a href="#evaluation"><span aria-hidden="true">⌁</span>统一评测</a>
+        <a href="#log"><span aria-hidden="true">▦</span>逐日日志</a>
+        <a href="#open"><span aria-hidden="true">◌</span>待核验</a>
+      </nav>
+      <div class="rail-foot">RAVEN · SPEAKER<br><time datetime="2026-11-18">2026-11-18</time> <span>北京时间</span></div>
+    </aside>
+    <main>
+      <header class="hero" id="overview">
+        <div class="intro">
+          <h1>EOS <span>发言完成检测</span></h1>
+          <p>在流式生成中判断指定台词是否已按顺序说足次数，并在下一合法块切入倾听。RAVEN 与 Speaker 已完成离线对照，独立在线首停仍待验收。</p>
+          <div class="actions"><a class="button primary" href="#evaluation">查看评测矩阵 <span aria-hidden="true">↘</span></a><a class="button secondary" href="#log">浏览逐日日志</a></div>
+        </div>
+        <div class="hero-chart">
+          <h2>固定阈值 0.5 · 离线最高</h2>
+          <div class="hero-row"><b>RAVEN Base52</b><strong>41<span> / 52</span></strong></div>
+          <div class="stack" role="img" aria-label="RAVEN 命中 41，提前 8，未触发 3"><i style="flex:41"></i><i style="flex:8"></i><i style="flex:3"></i></div>
+          <div class="hero-row"><b>Speaker Base64</b><strong>24<span> / 64</span></strong></div>
+          <div class="stack" role="img" aria-label="Speaker 命中 24，提前 27，未触发 13"><i style="flex:24"></i><i style="flex:27"></i><i style="flex:13"></i></div>
+          <div class="legend"><span><i class="hit"></i>命中</span><span><i class="early"></i>提前</span><span><i class="miss"></i>未触发</span></div>
+        </div>
+      </header>
+      <div class="metrics" aria-label="主要项目指标">
+        <div><strong>137</strong><b>历史模型与策略</b><small>105 条表示一致 · 32 条诊断</small></div>
+        <div><strong>63,363</strong><b>Speaker 合并标签</b><small>距目标 100,000 差 36,637</small></div>
+        <div><strong>17</strong><b>逐日记录</b><small>2026-11-02 至 2026-11-18</small></div>
+      </div>
+      <section id="data">
+        <div class="section-head"><h2>数据与标签</h2><p>RAVEN 生成轨迹与 Speaker 原始音频分别用于哪类证据</p></div>
+        <div class="pair">
+          <article class="panel"><h3>RAVEN · 生成轨迹</h3><p>使用生成模型的音频 latent 与 clean-cache-fill hidden。旧 dense 以 339 条有首个完成银标的轨迹训练。最近的短台词任务采用八卡生成和自动筛查。</p><dl><div><dt>完整导出</dt><dd>208</dd></div><div><dt>可用自动标签</dt><dd>173</dd></div><div><dt>UNKNOWN</dt><dd>35</dd></div></dl><small>生产快照 11-18 14:38:20 · 人工质量通过 0</small></article>
+          <article class="panel"><h3>Speaker · 真实原片</h3><p>从原片时间零起构造音频前缀，以 AudioVAE 提取 latent。标签生产新增 50,961 条去重标签，和 12,402 条旧标签合并，覆盖 16,612 个原视频。</p><dl><div><dt>合并标签</dt><dd>63,363</dd></div><div><dt>目标缺口</dt><dd>36,637</dd></div><div><dt>新增特征编码</dt><dd>0</dd></div></dl><small>合并清单行数与摘要核验通过 · 11-18 14:37</small></article>
+        </div>
+        <div class="callout"><b>监督合同</b><p>目标第一次可靠完成的块记为 k。Strict first-DONE 训练仅保留截至 k 的输入，边界模糊或证据不足记 UNKNOWN 并按合同屏蔽。早期保守版本只标证据明确的负端点，dense 版本回填 k 前块用于该轮训练。标签、特征、人工质量和训练准入各有独立回执。</p></div>
+      </section>
+      <section id="training">
+        <div class="section-head"><h2>模型与训练</h2><p>冻结 RAVEN-H3 生成主干，只训练轻量发言完成读出</p></div>
+        <div class="pair architecture">
+          <article class="panel"><h3>LATENT <span>64 维音频</span></h3><p>拼接两声道 AudioVAE latent，适用于 RAVEN 和 Speaker 的兼容输入。标准 Head 约 264 万参数。</p></article>
+          <article class="panel"><h3>HIDDEN <span>10,752 维音频</span></h3><p>RAVEN 第 24 层 clean-cache-fill 音频行，每声道 5,376 维。标准 Head 约 540 万参数。</p></article>
+        </div>
+        <p class="explain">两者均融合 5,120 维文本与目标次数编码，使用因果卷积、四头交叉注意力和单向 GRU。训练中的标签与时间戳不进入推理。标准 done 与 progress 各自读出，coupled_progress 使用目标末位置概率产生 done。</p>
+        <div class="table-box" tabindex="0" role="region" aria-label="训练版本表">
+          <table class="training-table"><thead><tr><th>实验</th><th>训练数据与方法</th><th>实际更新与权重</th><th>结果</th></tr></thead>
+          <tbody id="training-body"></tbody></table>
+        </div>
+      </section>
+      <section id="evaluation">
+        <div class="section-head"><h2>统一评测</h2><p>按权重、训练步与阈值查看首停表现</p></div>
+        <div class="eval-summary">
+          <article><small>RAVEN · 固定 0.07</small><strong>44 / 52</strong><p>scale5000 · step 1937<br>提前 0 · 未触发 8</p></article>
+          <article><small>Speaker · 事后最高</small><strong>25 / 64</strong><p>large_mean · step 2000<br>提前 17 · 未触发 22</p></article>
+          <article><small>Speaker · 事后零提前最高</small><strong>5 / 64</strong><p>large_mean · step 2000<br>提前 0 · 未触发 59</p></article>
+        </div>
+        <div class="callout"><b>如何读表</b><p>命中指第一次越阈落在代理应停块。RAVEN 64 条生成轨迹中 52 条可判、12 条 UNKNOWN。Speaker 为 64 个不同原视频，短／中／长 22／21／21，仅 16 条有额外完整后块。迟停为窗口内观测值，未触发表示截至窗口结束仍未触发。事后阈值来自同一评测集。</p></div>
+        <div class="matrix panel">
+          <div class="matrix-title"><h3>模型与 checkpoint</h3><a href="models.json" download="eos-evaluation-models.json">下载聚合数据</a></div>
+          <div class="filters">
+            <label>评测集<select id="domain"><option value="raven">RAVEN · Base52</option><option value="speaker">Speaker · Base64</option></select></label>
+            <label>阈值口径<select id="mode"></select></label>
+            <label>训练家族<select id="family"><option value="">全部家族</option></select></label>
+            <label>查找权重或步数<input id="search" type="search" placeholder="例如 1937 或 large_mean"></label>
+          </div>
+          <div class="matrix-toolbar"><label class="check"><input id="matched" type="checkbox" checked>仅显示表示一致版本</label><span id="count" aria-live="polite"></span></div>
+          <div class="table-box" tabindex="0" role="region" aria-label="逐模型评分表">
+            <table><thead><tr><th>版本与权重</th><th>Step</th><th>阈值 τ</th><th>首停命中</th><th>提前</th><th>迟停</th><th>未触发</th><th>表征</th></tr></thead><tbody id="results"></tbody></table>
+          </div>
+          <div class="pager"><button id="previous" type="button">上一页</button><span id="page"></span><button id="next" type="button">下一页</button></div>
+          <p id="load-error" hidden role="alert">评测数据未能载入，请刷新页面。</p>
+        </div>
+        <div class="panel probe" id="thresholds">
+          <div class="matrix-title"><h3>逐阈值回放</h3><a id="curve-data" href="curves-raven.json" download>下载阈值聚合数据</a></div>
+          <p>在上表选择一个权重，使用滑杆查看已保存的 logit 变化点。统计来自当前离线评测集。</p>
+          <div id="curve" hidden>
+            <div class="curve-title"><strong id="curve-model"></strong><output id="tau"></output></div>
+            <label class="slider">已保存阈值位置<input type="range" min="0" value="0" id="threshold" step="1"></label>
+            <div class="curve-bar" id="curve-bar" role="img" aria-label=""></div>
+            <div class="legend" id="curve-legend"></div>
+          </div>
+          <p id="curve-state" aria-live="polite">从模型表中选择一个版本。</p>
+        </div>
+        <div class="pair findings">
+          <article class="panel"><h3>表征差异影响排名</h3><p>Content step 200 达到 45/52，但训练用原生 BPE、回放用词／字池化。Content 15、Strict 15、Top-K 2 条共 32 条诊断项从默认榜单排除。Speaker 缺匹配 HIDDEN 输入，39 条保留 NA。</p></article>
+          <article class="panel"><h3>低提前率伴随漏停</h3><p>同一 Raven 固定阈值 0.01494821608 下，large_mean、scale5000、small_mean 分别是 43/52、42/52、39/52，提前 5、7、1 条。Speaker 在 25/64 的事后最优点仍有 17 条提前，其中 8 条在目标开始前、9 条在句内。</p></article>
+        </div>
+      </section>
+      <section id="log">
+        <div class="section-head"><h2>逐日日志</h2><p>北京时间 · 2026-11-02 至 2026-11-18</p></div>
+        <div class="log-layout panel"><nav id="days" aria-label="日志日期"></nav><article id="day" aria-live="polite"></article></div>
+      </section>
+      <section id="open">
+        <div class="section-head"><h2>待核验</h2><p>决定下一阶段能否得出研究结论的证据</p></div>
+        <div class="open-grid" id="open-grid"></div>
+      </section>
+      <footer><b>EOS 研究总览</b><span>数据快照 2026-11-18 · 北京时间</span><a href="#overview">回到顶部 ↑</a></footer>
+    </main>
+  </div>
+</body>
+</html>
