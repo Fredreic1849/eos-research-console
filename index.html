@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="RAVEN 与 Speaker 的发言完成检测研究，涵盖数据、训练、逐步评测和逐日实验日志。">
-  <meta name="theme-color" content="#f5f7fb">
+  <meta name="theme-color" content="#f6f7f3">
   <title>EOS 研究总览</title>
   <link rel="stylesheet" href="styles.css">
   <script defer src="research.js"></script>
@@ -19,6 +19,7 @@
         <nav class="site-nav" aria-label="站点导航">
           <a href="#overview" data-section aria-current="page">总览</a>
           <a href="quality/">数据质检</a>
+          <a href="#model" data-section>模型</a>
           <a href="#evaluation" data-section>统一评测</a>
           <a href="#log" data-section>逐日日志</a>
         </nav>
@@ -55,13 +56,76 @@
         </div>
         <div class="callout"><b>监督合同</b><p>目标第一次可靠完成的块记为 k。Strict first-DONE 训练仅保留截至 k 的输入，边界模糊或证据不足记 UNKNOWN 并按合同屏蔽。早期保守版本只标证据明确的负端点，dense 版本回填 k 前块用于该轮训练。标签、特征、人工质量和训练准入各有独立回执。</p></div>
       </section>
-      <section id="training">
-        <div class="section-head"><h2>模型与训练</h2><p>冻结 RAVEN-H3 生成主干，只训练轻量发言完成读出</p></div>
-        <div class="pair architecture">
-          <article class="panel"><h3>LATENT <span>64 维音频</span></h3><p>拼接两声道 AudioVAE latent，适用于 RAVEN 和 Speaker 的兼容输入。标准 Head 约 264 万参数。</p></article>
-          <article class="panel"><h3>HIDDEN <span>10,752 维音频</span></h3><p>RAVEN 第 24 层 clean-cache-fill 音频行，每声道 5,376 维。标准 Head 约 540 万参数。</p></article>
+      <section id="model">
+        <div class="section-head model-heading">
+          <div><h2>模型与训练监督</h2><p>冻结生成器和目标文本编码器。EOS Head 在每个可用原生块上读出一次停止分数。</p></div>
+          <nav aria-label="模型章节"><a href="#supervision">训练监督</a><a href="#families">家族对照</a></nav>
         </div>
-        <p class="explain">两者均融合 5,120 维文本与目标次数编码，使用因果卷积、四头交叉注意力和单向 GRU。训练中的标签与时间戳不进入推理。标准 done 与 progress 各自读出，coupled_progress 使用目标末位置概率产生 done。</p>
+        <figure class="model-figure" aria-labelledby="model-caption">
+          <figcaption id="model-caption"><strong>EOS Head 逐块数据流</strong><small>B 为批量，T 为当前块内的音频时间步，N 为目标单元数，k 为块索引。</small></figcaption>
+          <div class="model-inputs">
+            <div class="model-node">
+              <h3>当前音频块 <code>k</code></h3>
+              <p><b>LATENT</b> <code>[B, T, 64]</code> · 双声道 AudioVAE，各 32 维。</p>
+              <p><b>HIDDEN</b> <code>[B, T, 10752]</code> · RAVEN clean-cache-fill 第 24 层（零基索引），双声道各 5,376 维。</p>
+            </div>
+            <div class="model-node">
+              <h3>目标文本</h3>
+              <p>冻结特征 <code>[B, N, 5120]</code>，投影至 <code>[B, N, 256]</code>。加入单元位置与重复次数编码 <code>[B, N]</code>。</p>
+              <p>主线 N 为池化词／字单元，Content / Strict 的训练版本使用原生 BPE。另提供音频和目标有效长度，各 <code>[B]</code>。</p>
+            </div>
+          </div>
+          <ol class="model-flow" aria-label="从输入到块级状态">
+            <li><strong>音频投影</strong><span>LayerNorm + Linear → <code>[B, T, 256]</code></span></li>
+            <li><strong>左因果卷积</strong><span>两层 Conv1d，kernel 3，SiLU、残差、dropout 0.1。每层保留前两个有效位置。</span></li>
+            <li><strong>文本融合</strong><span>四头交叉注意力。音频作查询，目标作键和值，屏蔽文本 padding。</span></li>
+            <li><strong>单向 GRU</strong><span>逐时间步读取 <code>[B, T, 256]</code>，取最后一个有效状态 <code>[B, 256]</code>。</span></li>
+          </ol>
+          <p class="model-state"><strong>跨块递推</strong>　按可用顺序读入块，两个卷积缓存各 <code>[B, 2, 256]</code>，GRU 状态 <code>[1, B, 256]</code>。新事件清零，后续块继承。跨块因果性仍要求特征在决策时点已就绪。</p>
+          <div class="model-outputs">
+            <div class="model-node output-done">
+              <h3>停止读出</h3>
+              <p>末状态和目标注意力摘要拼为 <code>[B, 512]</code>，MLP <code>512 → 256 → 1</code> 输出 <code>done_logit [B]</code>。sigmoid 后得到本块停止分数 <code>pₖ [B]</code>。</p>
+            </div>
+            <div class="model-node">
+              <h3>进度读出</h3>
+              <p>末状态匹配目标单元和「尚未开始」哨兵，输出 <code>progress_logits [B, N+1]</code>。标准 Head 的进度分支独立于停止 MLP。</p>
+            </div>
+          </div>
+          <div class="inference-line"><strong>首停规则</strong><p>设阈值 τ 和连续命中数 m。沿块序列在 <code>pₖ ≥ τ</code> 时累计、跌破时清零，第一次连续达到 m 的当前块为首停。m=1 是单块规则。阈值和 m 是推理策略，回放扫阈值属于事后分析。</p></div>
+        </figure>
+        <div class="model-subsection" id="supervision">
+          <h3>训练监督</h3>
+          <p>标注粒度是一条事件轨迹内的原生块。目标文本作为模型输入。ASR／CTC 边界、监督标签和真实完成位置仅参与训练或评测。</p>
+          <ol class="supervision-path" aria-label="训练监督路径">
+            <li>ASR／CTC 前缀证据</li><li>原生块 0／1／UNKNOWN</li><li>有效块掩码与权重</li><li>停止 BCE 或对应变体损失</li>
+          </ol>
+          <div class="supervision-rows">
+            <article><h4>RAVEN 保守标签</h4><p>有证据的未完成块为 0，首次可靠完成为 1。证据不足与边界不确定块记 UNKNOWN，跳过损失。有效银标权重 0.5，事件内对已有正负类均衡，使用 BCE。</p></article>
+            <article><h4>RAVEN dense first-hit</h4><p>339 条有 ASR 银标首完成锚点的事件，以 k 为正，把 k 前回填为 0，k 后从训练输入排除。无锚点事件排除。BCE 按事件及其有效类别均衡，银标乘 0.5。</p></article>
+            <article><h4>Speaker 与 Strict first-DONE</h4><p>由原片前缀对齐得到目标词时间与末词不确定区间。区间前有证据的块为负，第一个覆盖安全完成点的块为正；模糊边界、padding 和适用协议中的 k 后块屏蔽。Strict 为短／长目标分别物理截断至自己的 k。</p></article>
+          </div>
+        </div>
+        <div class="model-subsection" id="families">
+          <h3>历史模型与策略的差异</h3>
+          <div class="table-box" tabindex="0" role="region" aria-label="模型家族比较">
+            <table class="model-table">
+              <thead><tr><th scope="col">家族</th><th scope="col">架构或输入改变</th><th scope="col">训练与读出改变</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">标准 EOS Head</th><td>LATENT 2,642,817 参数，HIDDEN 5,400,321。保守、dense、学习曲线复用图中结构。</td><td>保守与 dense 用有效端点 BCE。早期有进度有效标签的配方另加进度 CE。</td></tr>
+                <tr><th scope="row">Speaker LATENT</th><td>使用真实原片前缀的 64 维 AudioVAE latent，沿用标准结构。</td><td>mean 平衡正点与历史负点均值，hardneg 取最高分历史负点，progress 在 mean 上加 0.3 进度 CE。</td></tr>
+                <tr><th scope="row">Content / Strict</th><td>以原生 BPE 作为目标轴。coupled_progress 冻结停止 MLP，以末位置 pointer logit 减其余位置的 logsumexp 作为停止 logit。</td><td>普通轨迹 BCE；配对组用 0.5 轨迹 + 0.5 同前缀配对 BCE；耦合组另加 0.3 进度 CE 和 0.1 单调惩罚。</td></tr>
+                <tr><th scope="row">Top-K 与末层适配</th><td>Top-K 沿用 Strict 的轨迹读出。末层 A/B 冻结其余层，只更新停止线性层的 257 个参数。</td><td>Top-K 负例多于两个时，用 0.75 全部负损失均值 + 0.25 最高两个损失均值。末层试验用 BCE 检查困难负点。</td></tr>
+                <tr><th scope="row">H/L 内容探针</th><td>独立 CTC 读出。L 为 64 维，H 经固定 PCA 到 64 维。单层单向 GRU128 输出字符 logit <code>[B, T, 39]</code>。</td><td>用对应物理前缀的转写作监督。H/L 各一次 CPU 更新并重载，开发集为 0。探针输出字符序列证据。</td></tr>
+                <tr><th scope="row">连续命中与阈值对照</th><td>复用同一权重的块分数。</td><td>按各历史或固定阈值及连续块数回放。32 个 BPE 训练→unit-pool 回放条目仅作跨表示诊断。</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <details class="model-evidence" id="model-sources"><summary>核验依据</summary><p>标准 Head 实现、特征观察器与停止适配器。339 轨迹 dense 安装配置、标签构建与 BCE 实现。Speaker 训练配方、Strict first-DONE 与 Top-K 实现。H/L 一步及独立重载回执。评测分母和 checkpoint 可在 <a href="#evaluation">统一评测</a> 对照。</p></details>
+        </div>
+      </section>
+      <section id="training">
+        <div class="section-head"><h2>训练回执</h2><p>按家族查看样本范围、实际更新、保存权重和对照结果。</p></div>
         <div class="table-box" tabindex="0" role="region" aria-label="训练版本表">
           <table class="training-table"><thead><tr><th>实验</th><th>训练数据与方法</th><th>实际更新与权重</th><th>结果</th></tr></thead>
           <tbody id="training-body"></tbody></table>
