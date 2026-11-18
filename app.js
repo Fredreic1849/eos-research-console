@@ -49,9 +49,9 @@ function updateRoute() {
     showDay(date[1]);
     el("log").scrollIntoView();
   }
-  const active = date ? "#log" : hash === "#thresholds" ? "#evaluation" : hash;
-  document.querySelectorAll(".rail nav a").forEach((link) => {
-    if (link.hash === active) link.setAttribute("aria-current", "location");
+  const active = date || hash === "#log" ? "#log" : ["#evaluation", "#thresholds"].includes(hash) ? "#evaluation" : "#overview";
+  document.querySelectorAll(".site-nav a[data-section]").forEach((link) => {
+    if (link.hash === active) link.setAttribute("aria-current", active === "#overview" ? "page" : "location");
     else link.removeAttribute("aria-current");
   });
 }

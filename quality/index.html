@@ -11,55 +11,80 @@
 </head>
 <body>
   <a class="skip" href="#overview">跳到正文</a>
-  <div class="shell">
-    <aside class="rail">
-      <a class="brand" href="../"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>EOS<span class="brand-sub">研究总览</span></span></a>
-      <nav aria-label="章节">
-        <a href="../"><span aria-hidden="true">◈</span>项目概览</a>
-        <a href="#overview" aria-current="location"><span aria-hidden="true">⊞</span>数据质检</a>
-        <a href="#distributions"><span aria-hidden="true">⌁</span>分布</a>
-        <a href="#batches"><span aria-hidden="true">▤</span>批次与抽查</a>
+  <header class="site-header">
+    <div class="site-inner">
+      <a class="brand" href="../"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>EOS <span>研究总览</span></a>
+      <nav class="site-nav" aria-label="站点导航">
+        <a href="../">总览</a>
+        <a href="./" aria-current="page">数据质检</a>
+        <a href="../#evaluation">统一评测</a>
+        <a href="../#log">逐日日志</a>
       </nav>
-      <div class="rail-foot">RAVEN · SPEAKER<br>数据质检</div>
-    </aside>
-    <main>
-      <header id="overview" class="quality-header">
-        <div><h1>数据质检</h1><p>按批次查看目标语音、首次完成时间与标签覆盖，定位值得听审的分组。</p></div>
-        <a class="button secondary" href="../">返回项目总览</a>
-      </header>
-      <p id="loading" role="status">正在读取聚合数据…</p>
-      <div id="dashboard" hidden>
-        <div class="panel filters quality-filters">
+    </div>
+  </header>
+  <main id="overview">
+    <header class="page-heading">
+      <h1>数据质检</h1>
+      <p>先选数据范围，再看时长、完成位置与异常样本覆盖。</p>
+    </header>
+    <p id="loading" role="status">正在读取聚合数据…</p>
+    <div id="dashboard" hidden>
+      <section class="filter-panel" aria-label="数据筛选">
+        <div class="filters">
           <label>数据域<select id="q-domain"><option value="">全部</option><option>RAVEN</option><option>Speaker</option></select></label>
           <label>批次<select id="q-batch"><option value="">全部</option></select></label>
           <label>目标语音时长<select id="q-duration"></select></label>
           <label>标签状态<select id="q-status"></select></label>
         </div>
-        <div class="metrics" aria-live="polite">
-          <div><strong id="q-n"></strong><b>当前筛选记录</b><small id="q-known"></small></div>
-          <div><strong id="q-missing"></strong><b>目标时长缺失</b><small id="q-state"></small></div>
-          <div><strong id="q-playable"></strong><b>私有审阅池覆盖</b><small>当前筛选下有媒体入口的条目</small></div>
+      </section>
+      <section class="quality-core" id="distributions">
+        <aside class="scope" aria-labelledby="q-scope">
+          <p>当前数据范围</p>
+          <h2 id="q-scope"></h2>
+          <dl aria-live="polite">
+            <div><dt>分母</dt><dd id="q-n"></dd></div>
+            <div><dt>有时长证据</dt><dd id="q-known"></dd></div>
+            <div><dt>私有审阅覆盖</dt><dd id="q-playable"></dd></div>
+          </dl>
+          <p id="snapshot"></p>
+        </aside>
+        <article class="primary-chart">
+          <h2>目标语音时长</h2>
+          <p>从目标开始到最后一词，含中间停顿。使用现有 ASR 或 CTC 的证据跨度。</p>
+          <div id="speech-chart"></div>
+        </article>
+      </section>
+      <section class="quality-section" aria-labelledby="time-title">
+        <div class="section-head"><h2 id="time-title">完成位置</h2><p>生产首次确认、离线代理应停和训练对齐分别计数。</p></div>
+        <div class="chart-grid">
+          <article><h3>首次 DONE 或代理应停块</h3><p id="done-note"></p><div id="done-chart"></div><div id="proxy-chart"></div></article>
+          <article><h3>训练 EOS 区间中值</h3><p id="interval-note"></p><div id="interval-chart"></div></article>
         </div>
-        <section id="distributions">
-          <div class="section-head"><h2>分布</h2><p>分布按当前筛选统计。生产首次确认与离线代理应停各用本组分母。</p></div>
-          <div class="pair quality-charts">
-            <article class="panel"><h3>目标语音跨度</h3><p>ASR 或 CTC 证据绑定的开始至末词，含中间停顿。不是整段导出媒体长度。</p><div id="speech-chart"></div></article>
-            <article class="panel"><h3>标签状态</h3><p id="label-note"></p><div id="status-chart"></div></article>
-            <article class="panel"><h3>首次 DONE 或代理应停块</h3><p id="done-note"></p><div id="done-chart"></div><div id="proxy-chart"></div></article>
-            <article class="panel"><h3>对齐 EOS 区间中值</h3><p id="interval-note"></p><div id="interval-chart"></div></article>
-          </div>
-        </section>
-        <section id="batches">
-          <div class="section-head"><h2>批次与抽查</h2><p id="snapshot"></p></div>
-          <div id="batch-grid" class="batch-grid"></div>
-          <div class="callout review-tip"><b>从分布转到真实样本</b>
-            <p>打开随交付提供的私有审阅入口，选择同一批次、时长和标签状态。按来源抽样时，每次优先选择尚未抽过的来源。生产池为按时长与状态分层选入的子集，冻结评测池覆盖已有媒体。抽查结果用于发现问题，不用于估计整个生产集通过率。</p>
-          </div>
-          <div class="callout"><b>缺失分母</b><p id="quality-notes"></p></div>
-        </section>
-      </div>
-      <footer><b>EOS 研究总览</b><a href="#overview">回到顶部 ↑</a></footer>
-    </main>
-  </div>
+      </section>
+      <section class="quality-section" aria-labelledby="coverage-title">
+        <div class="section-head"><h2 id="coverage-title">标签与缺失</h2><p id="label-note"></p></div>
+        <div class="chart-grid">
+          <article><h3>标签状态</h3><div id="status-chart"></div></article>
+          <article class="missing-summary">
+            <h3>当前范围的缺口</h3>
+            <dl>
+              <div><dt>目标时长缺失</dt><dd id="q-missing"></dd></div>
+              <div><dt>UNKNOWN、待标或异常</dt><dd id="q-state"></dd></div>
+            </dl>
+          </article>
+        </div>
+      </section>
+      <section class="quality-section" id="batches">
+        <div class="section-head"><h2>批次与抽查</h2><p>生产池按时长与标签状态分层，冻结评测池覆盖已有媒体。</p></div>
+        <div id="batch-grid" class="batch-grid"></div>
+        <details class="method-note">
+          <summary>查看统计口径与抽查说明</summary>
+          <p id="quality-notes"></p>
+          <p>打开随交付提供的本机样本审阅入口，选择同一批次或标签状态。抽查用于发现问题，生产集通过率需另行估计。</p>
+        </details>
+      </section>
+    </div>
+    <footer><b>EOS 研究总览</b><a href="#overview">回到顶部 ↑</a></footer>
+  </main>
 </body>
 </html>

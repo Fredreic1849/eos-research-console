@@ -63,14 +63,15 @@ function renderData(data) {
     const interval=totalCells(cells,c=>c[4]>=0);
     const uncertain=totalCells(cells,c=>c[1]==="unknown" || c[1]==="error" || c[1]==="pending");
     const flagged=totalCells(cells,c=>c[5]);
-    byId("q-n").textContent=formatCount(n);
-    byId("q-known").textContent=`可核验时长 ${formatCount(value)} / ${formatCount(n)}`;
+    byId("q-scope").textContent=batch ? groups[0]?.title || "当前筛选" : domain ? `${domain} 全部批次` : "全部批次";
+    byId("q-n").textContent=formatCount(n)+" 条";
+    byId("q-known").textContent=`${formatCount(value)} / ${formatCount(n)}`;
     byId("q-missing").textContent=percentage(n-value,n);
-    byId("q-state").textContent=`UNKNOWN、待标或异常 ${formatCount(uncertain)} / ${formatCount(n)}`;
+    byId("q-state").textContent=`${formatCount(uncertain)} / ${formatCount(n)}`;
     byId("q-playable").textContent=`${formatCount(totalCells(samples))} / ${formatCount(n)}`;
     byId("label-note").textContent=`含边界标记的记录 ${formatCount(flagged)} / ${formatCount(n)}。标记可与银标并存。`;
-    byId("done-note").textContent=`有原生块时间 ${formatCount(done)} / ${formatCount(n)}。生产和评测的分布在下方分列。`;
-    byId("interval-note").textContent=`有银标区间 ${formatCount(interval)} / ${formatCount(n)}。训练对齐区间按原片时间计。`;
+    byId("done-note").textContent=`${formatCount(done)} / ${formatCount(n)} 条有原生块时间。`;
+    byId("interval-note").textContent=`${formatCount(interval)} / ${formatCount(n)} 条有银标区间，按原片时间计。`;
     showChart("speech-chart",[...durationBins.map((x,i)=>[x,totalCells(cells,c=>c[2]===i)]),["缺时长",n-value,true]],n);
     showChart("status-chart",Object.entries(states).map(([k,v])=>[v,totalCells(cells,c=>c[1]===k),["unknown","error","pending"].includes(k)]),n);
     for (const [id,group,title] of [["done-chart",native,"生产首次确认"],["proxy-chart",proxy,"离线代理应停"]]){
@@ -80,21 +81,23 @@ function renderData(data) {
       showChart(id,[...timeBins.map((x,i)=>[x,totalCells(group,c=>c[3]===i)]),["无块时间",totalCells(group,c=>c[3]<0),true]],size);
       node.prepend(tag("p",`${title} · ${formatCount(size)} 条`));
     }
-    showChart("interval-chart",[...timeBins.map((x,i)=>[x,totalCells(cells,c=>c[4]===i)]),["无区间",n-interval,true]],n);
+    showChart("interval-chart",timeBins.map((x,i)=>[x,totalCells(cells,c=>c[4]===i)]),interval);
+    if(!interval) byId("interval-chart").replaceChildren(tag("p","当前范围没有训练对齐区间。"));
     const grid=byId("batch-grid");
     grid.replaceChildren(...groups.map((b)=>{
-      const card=tag("article",undefined,"panel"), dl=tag("dl");
+      const card=tag("article"), info=tag("div"), dl=tag("dl");
+      info.append(tag("h3",b.title),tag("small",b.source),tag("p",b.note));
       for(const [k,v] of [["当前记录",totalCells(b.cells,match)],["原批次来源",b.sources],["私有覆盖",totalCells(b.sample_cells,match)]]){
         const node=tag("div");node.append(tag("dt",k),tag("dd",formatCount(v)));dl.append(node);
       }
-      const pick=tag("button","查看该批次","button secondary");pick.type="button";
-      pick.addEventListener("click",()=>{byId("q-domain").value=b.domain; updateBatches();byId("q-batch").value=b.id;draw();});
-      card.append(tag("small",b.source),tag("h3",b.title),tag("p",b.note),dl,pick);
+      const pick=tag("button","筛选此批次","button secondary");pick.type="button";
+      pick.addEventListener("click",()=>{byId("q-domain").value=b.domain; updateBatches();byId("q-batch").value=b.id;draw();byId("q-batch").focus();});
+      card.append(info,dl,pick);
       return card;
     }));
   };
   const updateBatches=initFilters(data.batches,draw);
-  byId("snapshot").textContent=`生产读回 ${data.at.slice(0,19).replace("T"," ")}（北京时间）。冻结回放单列，来源数以各自原批次为分母。`;
+  byId("snapshot").textContent=`生产快照 ${data.at.slice(0,19).replace("T"," ")}（北京时间）`;
   const status=data.raven_status;
   byId("quality-notes").textContent=`RAVEN 生产状态回执记录 ${status.complete_exports} 份完整导出、${status.quarantined} 隔离、${status.postprocess_failed} 后处理失败、人工通过 ${status.human_quality_accepted}；清单快照按冻结读取的文件集合统计。RAVEN 评测计划 72 槽，64 条有媒体，缺失 8/72。Speaker 合并清单覆盖 ${formatCount(data.speaker_sources)} 个去重来源；新旧来源可重叠。合并清单只含入选训练标签，拒收和未尝试记录没有同口径分母。各批次时长轴不同，合并只用于清点覆盖。`;
   draw();

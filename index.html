@@ -13,28 +13,28 @@
 <body>
   <a class="skip" href="#overview">跳到正文</a>
   <div class="shell">
-    <aside class="rail">
-      <a class="brand" href="#overview"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>EOS<span class="brand-sub">研究总览</span></span></a>
-      <nav aria-label="章节">
-        <a href="#overview" aria-current="location"><span aria-hidden="true">◈</span>概览</a>
-        <a href="#data"><span aria-hidden="true">▤</span>数据与标签</a>
-        <a href="quality/"><span aria-hidden="true">⊞</span>数据质检</a>
-        <a href="#training"><span aria-hidden="true">▣</span>模型与训练</a>
-        <a href="#evaluation"><span aria-hidden="true">⌁</span>统一评测</a>
-        <a href="#log"><span aria-hidden="true">▦</span>逐日日志</a>
-        <a href="#open"><span aria-hidden="true">◌</span>待核验</a>
-      </nav>
-      <div class="rail-foot">RAVEN · SPEAKER<br><time datetime="2026-11-18">2026-11-18</time> <span>北京时间</span></div>
-    </aside>
+    <header class="site-header">
+      <div class="site-inner">
+        <a class="brand" href="#overview"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>EOS <span>研究总览</span></a>
+        <nav class="site-nav" aria-label="站点导航">
+          <a href="#overview" data-section aria-current="page">总览</a>
+          <a href="quality/">数据质检</a>
+          <a href="#evaluation" data-section>统一评测</a>
+          <a href="#log" data-section>逐日日志</a>
+        </nav>
+      </div>
+    </header>
     <main>
       <header class="hero" id="overview">
         <div class="intro">
-          <h1>EOS <span>发言完成检测</span></h1>
-          <p>在流式生成中判断指定台词是否已按顺序说足次数，并在下一合法块切入倾听。RAVEN 与 Speaker 已完成离线对照，独立在线首停仍待验收。</p>
-          <div class="actions"><a class="button primary" href="#evaluation">查看评测矩阵 <span aria-hidden="true">↘</span></a><a class="button secondary" href="#log">浏览逐日日志</a></div>
+          <p class="snapshot">2026-11-18 研究快照</p>
+          <h1>EOS 发言完成检测</h1>
+          <p>判断流式生成中的台词是否已按要求说完，为切换到倾听提供信号。</p>
+          <p class="project-state"><strong>RAVEN 与 Speaker 离线对照已完成</strong><br>独立在线首停、跨域迁移与音画质量仍待验收。</p>
+          <div class="actions"><a class="button primary" href="quality/">打开数据质检 <span aria-hidden="true">→</span></a><a class="text-link" href="#evaluation">查看评测矩阵</a></div>
         </div>
         <div class="hero-chart">
-          <h2>固定阈值 0.5 · 离线最高</h2>
+          <h2>离线首停命中 <span>固定阈值 0.5</span></h2>
           <div class="hero-row"><b>RAVEN Base52</b><strong>41<span> / 52</span></strong></div>
           <div class="stack" role="img" aria-label="RAVEN 命中 41，提前 8，未触发 3"><i style="flex:41"></i><i style="flex:8"></i><i style="flex:3"></i></div>
           <div class="hero-row"><b>Speaker Base64</b><strong>24<span> / 64</span></strong></div>
@@ -42,15 +42,15 @@
           <div class="legend"><span><i class="hit"></i>命中</span><span><i class="early"></i>提前</span><span><i class="miss"></i>未触发</span></div>
         </div>
       </header>
-      <div class="metrics" aria-label="主要项目指标">
-        <div><strong>137</strong><b>历史模型与策略</b><small>105 条表示一致 · 32 条诊断</small></div>
-        <div><strong>63,363</strong><b>Speaker 合并标签</b><small>距目标 100,000 差 36,637</small></div>
-        <div><strong>17</strong><b>逐日记录</b><small>2026-11-02 至 2026-11-18</small></div>
-      </div>
+      <nav class="quick-links" aria-label="总览章节">
+        <a href="#data"><strong>数据与标签</strong><small>Speaker 合并标签 63,363 条</small></a>
+        <a href="#training"><strong>模型与训练</strong><small>137 个历史模型或策略</small></a>
+        <a href="#open"><strong>待核验事项</strong><small>在线首停、H/L 与训练准入</small></a>
+      </nav>
       <section id="data">
-        <div class="section-head quality-entry"><div><h2>数据与标签</h2><p>RAVEN 生成轨迹与 Speaker 原始音频分别用于哪类证据</p></div><a class="button secondary" href="quality/">打开数据质检 →</a></div>
+        <div class="section-head"><h2>数据与标签</h2><p>生成轨迹与真实原片分开统计。</p></div>
         <div class="pair">
-          <article class="panel"><h3>RAVEN · 生成轨迹</h3><p>使用生成模型的音频 latent 与 clean-cache-fill hidden。旧 dense 以 339 条有首个完成银标的轨迹训练。最近的短台词任务采用八卡生成和自动筛查。</p><dl><div><dt>完整导出</dt><dd>208</dd></div><div><dt>可用自动标签</dt><dd>173</dd></div><div><dt>UNKNOWN</dt><dd>35</dd></div></dl><small>生产快照 11-18 14:38:20 · 人工质量通过 0</small></article>
+          <article class="panel"><h3>RAVEN · 生成轨迹</h3><p>使用生成模型的音频 latent 与 clean-cache-fill hidden。旧 dense 以 339 条有首个完成银标的轨迹训练。最近的短台词任务采用八卡生成和自动筛查。</p><dl><div><dt>完整导出</dt><dd>245</dd></div><div><dt>可用自动标签</dt><dd>203</dd></div><div><dt>UNKNOWN</dt><dd>42</dd></div></dl><small>生产快照 11-18 15:00:55 · 人工质量通过 0</small></article>
           <article class="panel"><h3>Speaker · 真实原片</h3><p>从原片时间零起构造音频前缀，以 AudioVAE 提取 latent。标签生产新增 50,961 条去重标签，和 12,402 条旧标签合并，覆盖 16,612 个原视频。</p><dl><div><dt>合并标签</dt><dd>63,363</dd></div><div><dt>目标缺口</dt><dd>36,637</dd></div><div><dt>新增特征编码</dt><dd>0</dd></div></dl><small>合并清单行数与摘要核验通过 · 11-18 14:37</small></article>
         </div>
         <div class="callout"><b>监督合同</b><p>目标第一次可靠完成的块记为 k。Strict first-DONE 训练仅保留截至 k 的输入，边界模糊或证据不足记 UNKNOWN 并按合同屏蔽。早期保守版本只标证据明确的负端点，dense 版本回填 k 前块用于该轮训练。标签、特征、人工质量和训练准入各有独立回执。</p></div>
