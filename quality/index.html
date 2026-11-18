@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="按批次查看 EOS 数据的目标语音时长、完成时间、标签分布与抽查覆盖。">
+  <title>数据质检 · EOS 研究总览</title>
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="quality.css">
+  <script src="quality.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#overview">跳到正文</a>
+  <div class="shell">
+    <aside class="rail">
+      <a class="brand" href="../"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>EOS<span class="brand-sub">研究总览</span></span></a>
+      <nav aria-label="章节">
+        <a href="../"><span aria-hidden="true">◈</span>项目概览</a>
+        <a href="#overview" aria-current="location"><span aria-hidden="true">⊞</span>数据质检</a>
+        <a href="#distributions"><span aria-hidden="true">⌁</span>分布</a>
+        <a href="#batches"><span aria-hidden="true">▤</span>批次与抽查</a>
+      </nav>
+      <div class="rail-foot">RAVEN · SPEAKER<br>数据质检</div>
+    </aside>
+    <main>
+      <header id="overview" class="quality-header">
+        <div><h1>数据质检</h1><p>按批次查看目标语音、首次完成时间与标签覆盖，定位值得听审的分组。</p></div>
+        <a class="button secondary" href="../">返回项目总览</a>
+      </header>
+      <p id="loading" role="status">正在读取聚合数据…</p>
+      <div id="dashboard" hidden>
+        <div class="panel filters quality-filters">
+          <label>数据域<select id="q-domain"><option value="">全部</option><option>RAVEN</option><option>Speaker</option></select></label>
+          <label>批次<select id="q-batch"><option value="">全部</option></select></label>
+          <label>目标语音时长<select id="q-duration"></select></label>
+          <label>标签状态<select id="q-status"></select></label>
+        </div>
+        <div class="metrics" aria-live="polite">
+          <div><strong id="q-n"></strong><b>当前筛选记录</b><small id="q-known"></small></div>
+          <div><strong id="q-missing"></strong><b>目标时长缺失</b><small id="q-state"></small></div>
+          <div><strong id="q-playable"></strong><b>私有审阅池覆盖</b><small>当前筛选下有媒体入口的条目</small></div>
+        </div>
+        <section id="distributions">
+          <div class="section-head"><h2>分布</h2><p>所有比例以当前筛选记录为分母。不同完成时间口径各自计数。</p></div>
+          <div class="pair quality-charts">
+            <article class="panel"><h3>目标语音跨度</h3><p>ASR 或 CTC 证据绑定的开始至末词，含中间停顿。不是整段导出媒体长度。</p><div id="speech-chart"></div></article>
+            <article class="panel"><h3>标签状态</h3><p id="label-note"></p><div id="status-chart"></div></article>
+            <article class="panel"><h3>首次 DONE 或代理应停块</h3><p id="done-note"></p><div id="done-chart"></div><div id="proxy-chart"></div></article>
+            <article class="panel"><h3>对齐 EOS 区间中值</h3><p id="interval-note"></p><div id="interval-chart"></div></article>
+          </div>
+        </section>
+        <section id="batches">
+          <div class="section-head"><h2>批次与抽查</h2><p id="snapshot"></p></div>
+          <div id="batch-grid" class="batch-grid"></div>
+          <div class="callout review-tip"><b>从分布转到真实样本</b>
+            <p>打开随交付提供的私有审阅入口，选择同一批次、时长和标签状态。按来源抽样时，每次优先选择尚未抽过的来源。生产池为按时长与状态分层选入的子集，冻结评测池覆盖已有媒体。抽查结果用于发现问题，不用于估计整个生产集通过率。</p>
+          </div>
+          <div class="callout"><b>缺失分母</b><p id="quality-notes"></p></div>
+        </section>
+      </div>
+      <footer><b>EOS 研究总览</b><a href="#overview">回到顶部 ↑</a></footer>
+    </main>
+  </div>
+</body>
+</html>

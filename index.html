@@ -18,6 +18,7 @@
       <nav aria-label="章节">
         <a href="#overview" aria-current="location"><span aria-hidden="true">◈</span>概览</a>
         <a href="#data"><span aria-hidden="true">▤</span>数据与标签</a>
+        <a href="quality/"><span aria-hidden="true">⊞</span>数据质检</a>
         <a href="#training"><span aria-hidden="true">▣</span>模型与训练</a>
         <a href="#evaluation"><span aria-hidden="true">⌁</span>统一评测</a>
         <a href="#log"><span aria-hidden="true">▦</span>逐日日志</a>
@@ -47,7 +48,7 @@
         <div><strong>17</strong><b>逐日记录</b><small>2026-11-02 至 2026-11-18</small></div>
       </div>
       <section id="data">
-        <div class="section-head"><h2>数据与标签</h2><p>RAVEN 生成轨迹与 Speaker 原始音频分别用于哪类证据</p></div>
+        <div class="section-head quality-entry"><div><h2>数据与标签</h2><p>RAVEN 生成轨迹与 Speaker 原始音频分别用于哪类证据</p></div><a class="button secondary" href="quality/">打开数据质检 →</a></div>
         <div class="pair">
           <article class="panel"><h3>RAVEN · 生成轨迹</h3><p>使用生成模型的音频 latent 与 clean-cache-fill hidden。旧 dense 以 339 条有首个完成银标的轨迹训练。最近的短台词任务采用八卡生成和自动筛查。</p><dl><div><dt>完整导出</dt><dd>208</dd></div><div><dt>可用自动标签</dt><dd>173</dd></div><div><dt>UNKNOWN</dt><dd>35</dd></div></dl><small>生产快照 11-18 14:38:20 · 人工质量通过 0</small></article>
           <article class="panel"><h3>Speaker · 真实原片</h3><p>从原片时间零起构造音频前缀，以 AudioVAE 提取 latent。标签生产新增 50,961 条去重标签，和 12,402 条旧标签合并，覆盖 16,612 个原视频。</p><dl><div><dt>合并标签</dt><dd>63,363</dd></div><div><dt>目标缺口</dt><dd>36,637</dd></div><div><dt>新增特征编码</dt><dd>0</dd></div></dl><small>合并清单行数与摘要核验通过 · 11-18 14:37</small></article>
