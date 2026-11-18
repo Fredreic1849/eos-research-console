@@ -1,38 +1,38 @@
 "use strict";
 
 const training = [
-  ["RAVEN 保守与 dense", "383 条保守监督轨迹；在同一 339 条有完成锚点的轨迹上配对比较。dense 用事件内类别均衡 BCE。", "共同从 checkpoint 28 起步，匹配对照各 20 步；持续训练最终 L38515 / H38514。", "旧 339 条训练轨迹达到 339/339。最终 L/H 固定 0.5 在 Base52 上为 16/52、18/52。"],
-  ["RAVEN 学习曲线", "2 个 Head × 50/100/200/339 条 × 3 个 seed。26 条校准中 15 条有锚点。", "24 组随机初始化。RAVEN Base52 固定 0.5 的最高为 LATENT seed17 n339 best.pt，step 40。", "小规模校准集上随样本增加的平均收益不足 1 条。"],
-  ["Speaker LATENT", "真实音频 1,000/4,740 来源微调。随后在 4,740/10,000 来源比较 mean、hardneg、progress。", "早期规模实际 512/1937 步。后续四组各 2000 步，保存 best.pt 和 last.pt。", "历史 test200 上，0.5 的 exact 从 2.5% 到 18.5%，提前从 87% 到 66%。Base64 上仍多提前，两个分母分报。"],
-  ["Content / Strict", "用原生 BPE 比较普通 BCE、同前缀配对与进度耦合。Strict 排除 post-k。", "Strict 三臂各 2000 步，评测按各自冻结校准权重。", "Strict 历史留出 256 目标 exact 20/9/4。配对和耦合的首停均下降。"],
-  ["Top-K", "保留 Strict 轨迹合同，只调整明确负例损失的聚合，强调最高两个负峰。", "真实 1000 步，与同初始化的 trajectory_only step 1000 比较。", "历史留出命中 20→31/256；来源级提前 8→10/128。未通过预先设定的提升与提前风险门槛。"],
-  ["RAVEN 最后层适配", "冻结 L38515，只训练最后线性层 257 个参数，加入两来源真实难负点。", "A1 和 B4 合计 5 次 CPU 更新。", "B4 修正一例提前并损失另一来源的完成点，短 dev 仍 0/4。"],
-  ["H/L 内容探针", "保留同一物理前缀的 HIDDEN 与 LATENT，用同形 GRU+CTC 读出。train 前缀 1、dev 0。", "H/L 各 1 次 CPU 更新，保存及独立重载通过。正式小试 0 步。", "DATA_INSUFFICIENT。相对内容可读性与在线可用性未测。"]
+  ["RAVEN conservative / dense", "383 conservative tracks. Matched comparison on 339 anchored tracks. Dense uses event- and class-balanced BCE.", "Shared checkpoint 28. 20 matched steps per arm. Continued to L38515 / H38514.", "339/339 on the old training tracks. Final L/H at fixed 0.5 on Base52: 16/52 and 18/52."],
+  ["RAVEN learning curves", "2 heads × 4 sizes (50, 100, 200, 339) × 3 seeds. 15 of 26 calibration tracks have anchors.", "24 random starts. Best Base52 run at fixed 0.5: LATENT seed 17, n339, step 40.", "Mean calibration gain from scaling was under one hit."],
+  ["Speaker LATENT", "Fine-tuned on 1,000 / 4,740 sources, then compared mean, hardneg and progress at 4,740 / 10,000.", "Early scales ran 512 / 1937 actual steps. Four later runs saved best and last after 2000 steps each.", "Historical test200 at 0.5: exact 2.5% → 18.5%, early 87% → 66%. Base64 uses a separate denominator and still sees frequent early stops."],
+  ["Content / Strict", "Native BPE with trajectory BCE, matched-prefix pairs or coupled progress. Strict excludes post-k input.", "Three Strict arms, 2000 steps each, with frozen calibration.", "Strict held-out exact: 20, 9 and 4 out of 256. Both variants reduced hits."],
+  ["Top-K", "Same Strict tracks. Reweighted negative BCE toward the two highest negative losses.", "1000 actual updates against same-initialization trajectory-only at step 1000.", "Exact 20 → 31/256. Early sources 8 → 10/128. Missed both preregistered gates."],
+  ["RAVEN last layer", "Frozen L38515 with 257 trainable stop parameters. Hard negatives from two sources.", "Five CPU updates across A1 and B4.", "B4 fixed one early stop and lost another completion point. Short dev: 0/4."],
+  ["H/L content probe", "Shared GRU+CTC topology on the same physical prefix. One train prefix and zero dev.", "One CPU update per arm. Save and independent reload passed. Full pilot: zero updates.", "DATA_INSUFFICIENT. Content readability and online usability remain unevaluated."]
 ];
 
 const logs = [
-  ["02","确定目标与因果范围","冻结 RAVEN-H3 及发言完成合同，建立特征就绪、媒体发布和首触发时钟。","CPU 集成测试 65 项分两次通过。","独立阈值与质量待测。"],
-  ["03","初版 Head 与闭环工程","28 条生成轨迹共 768 个标注端点。两头累计 58 次物理更新，保存逻辑 checkpoint 27。","24 次基线尝试中 21 套完整产物；LATENT/HIDDEN 的已见案例通过闭环工程核验。","3 次历史失败保留；语义成功和留出效果待验。"],
-  ["04","一次会话内重新开口","完成双事件闭环，先切倾听，再接收新 SPEAKING 并重新触发。首批 8 条扩展采集完成。","自动生成和 ASR 流水线交付候选，累计可监督证据 28/256，新增优化更新为 0。","两段语音的逐词完成和严格质量待判。"],
-  ["05","自动生成与标注","24 条批次进入自动生成和 ASR。","首条真实生成 32 块，5 次 ASR 导出 1 个 first-DONE 银标候选，31 块 UNKNOWN。","候选未获训练准入，暂无 Head 改善结论。"],
-  ["06","冻结 2,048 个文本候选","保留原 256 个目标，新增长短句、数字否定、重复、停顿恢复文本 1,792 条。","新增候选中英各 896 条，完成 CPU 输入包。","生成和合规监督按后续回执计数。"],
-  ["07","推进分阶段生成","阶段 15 恢复后合计 63 份 ASR 导出。阶段 16 完成 64 份，阶段 17 继续运行。","18:49 快照累计已生成 972 条。","阶段 15 保留 1 份永久失败，数据未获训练准入。"],
-  ["08","STOP1034 与 first-hit 对照","949 个已导出候选划为 699/26/224，训练有 383 条可监督。随后对照同样 339 条的保守和 dense 标签。","固定 0.95 下保守 LATENT 证据支持提前 6/33→1/33，同时完成轨迹未触发 3/117→50/117。","降低提前率伴随漏停增加。"],
-  ["09","训练拟合与锁定历史留出","晚期 dense 快照在 339 条训练轨迹上达到 339/339。26 条校准后锁定 LATENT dense step 20。","阈值 0.7418575882911682，在 117 条历史有锚点轨迹中 exact 52，±1 块 64。另完成 24 组学习曲线。","历史留出仍依赖银标；独立金标待补。"],
-  ["10","持续训练停点与 Speaker 起步","RAVEN 最后实际更新于 18:21，L36111/H36110 完整重载。Speaker 夜间训练完成一步预检。","Speaker 后续交付 1,000 和 4,740 来源两个规模。","生成域到真实语音域的迁移效果需单独检验。"],
-  ["11","Speaker 扩容与 Strict 重跑","比较 4,740/10,000 来源，并运行同前缀三臂及 Strict 重跑。","旧 Content 同配对两目标均对 5.47%→14.06%，exact 8.98%→9.38%。Strict 的 exact 为 20/9/4，分母 256。","Strict 配对未改善首停；自动银标还缺人工边界审查。"],
-  ["12","排序和阈值诊断","检查完成块分数与前序峰值的关系，复核 codec 前沿，并实跑 Top-K。","Top-K exact 20/256→31/256，来源级提前 8/128→10/128。","exact 提升 4.30 个百分点，未达预设 5 个百分点，提前率也未通过门槛。"],
-  ["13","独立证据设计与长历史小试","评审提出 24 个新来源族的双人金标诊断。Learned slots 执行 28 次更新。","小试在一个留出来源的固定 0.5 下误判停顿。","24 来源 gold 尚未交付，实际生成收益待验。"],
-  ["14","重复计数与固定等待","比较受控单词、连续朗读与 RAVEN 前缀的计数见证。","受控样本得 1 个反序见证和 1 个 UNKNOWN。连续朗读有一对同类见证。","RAVEN 目标域两套 ASR 对第二遍完成有分歧，仍为 UNKNOWN。"],
-  ["15","相邻前缀与局部遮挡","用两套 ASR 复查重复台词相邻块，并在既定音频窗口局部置零。","后一块两套 ASR 都支持两遍，前一块因末词余量或旁证不足保留 UNKNOWN。","缺决策时点与已发布 PCM 的绑定，在线效果未测。"],
-  ["16","冻结 V2 回放与难负例适配","64/72 轨迹完成 V2 区间回放。原同时间、同长度的锁定排序配对 0 个。","L 15/48（提前 3、漏停 30），H 15/49（提前 0、漏停 34）。A1+B4 修正一例但损失另一安全完成点。","H 有 216 块在同块发布时未就绪。短 dev 0/4，在线首停核验 0。"],
-  ["17","137 条历史矩阵","冻结统一目录与 Base、Small、人工修订三套边界视图。登记 118 个 checkpoint 路径、114 个文件摘要。","RAVEN Base 补跑一条缺块轨迹的限定 CPU 回放，并复核 45/52 的表示差异。","固定和事后扫描分开解释；15+15+2 条 BPE 诊断待兼容复评。"],
-  ["18","逐块诊断、探针结案与数据扩充","在 137 条目上固定阈值复算，检查 Speaker 事后最优点的 17 条提前。H/L 各实做一步。","Speaker 标签总计 63,363。RAVEN 14:38:20 快照完整导出 208。H/L 只有 1 个 train 配对、0 个 dev。","RAVEN 自动标签待人工验收，Speaker 缺 36,637 条且未编码特征。H/L 内容收益未测。"]
+  ["02","Scope and causal clocks","Froze the RAVEN-H3 speech-completion spec and defined feature, publication and first-trigger timestamps.","65 CPU integration checks passed across two runs.","Independent thresholds and quality."],
+  ["03","First head and closed loop","28 generated tracks, 768 endpoints and 58 physical updates across two heads. Saved logical checkpoint 27.","21 complete artifacts from 24 attempts. Closed-loop smoke passed on seen LATENT and HIDDEN cases.","Three historical failures retained. Semantic success and held-out performance."],
+  ["04","Second speaking event","Switched to listening, accepted a second SPEAKING event and triggered again. Collected eight expansion items.","Generation and ASR produced 28/256 supervised candidates in total. Zero additional optimizer updates.","Word-level completion and media quality across both events."],
+  ["05","Auto generation and labels","Sent 24 items through the generation and ASR workflow.","First real generation: 32 blocks, five ASR exports, one first-DONE silver candidate and 31 unknowns.","Training admission and head improvement."],
+  ["06","2,048 text candidates","Retained the original 256 and added 1,792 with varied length, numbers, negation, repeats and pauses.","896 new English and 896 Chinese candidates. CPU input package ready.","Generation and supervision counted in later receipts."],
+  ["07","Staged generation","Stage 15 recovered to 63 ASR exports. Stage 16 reached 64. Stage 17 remained active.","972 generated items at 18:49.","One permanent failure in stage 15. Training admission."],
+  ["08","STOP1034 and first-hit","Split 949 exports into 699/26/224. 383 train tracks had supervision. Matched conservative and dense on 339.","At 0.95 early LATENT stops fell 6/33 → 1/33. Misses on complete tracks rose 3/117 → 50/117.","Trade-off between early and missed stops."],
+  ["09","Dense fit and held-out replay","Dense matched 339/339 training tracks. Locked LATENT dense step 20 on 26 calibration tracks.","At 0.7418575882911682, 52 exact and 64 within one block among 117 anchored tracks. Finished 24 learning-curve runs.","Independent gold boundaries for the historical silver holdout."],
+  ["10","Continued weights and Speaker preflight","RAVEN updated at 18:21 and reloaded L36111/H36110. Speaker completed a one-step preflight.","Later Speaker runs covered 1,000 and 4,740 sources.","Transfer from generated to recorded audio."],
+  ["11","Speaker scale and Strict","Compared 4,740 / 10,000 sources and reran paired, coupled and trajectory-only arms.","Old Content both-correct 5.47% → 14.06%; exact 8.98% → 9.38%. Strict exact 20/9/4 out of 256.","Strict pairs failed to improve first stop. Manual boundary review."],
+  ["12","Ranking and thresholds","Compared completed-block scores against earlier peaks, checked codec frontier and ran Top-K.","Exact 20/256 → 31/256. Early sources 8/128 → 10/128.","4.30-point exact gain missed the 5-point gate. Early risk gate also missed."],
+  ["13","Independent evidence plan","Proposed double annotation for 24 new source families. Learned slots ran 28 updates.","The pilot stopped at a pause on one held-out source at fixed 0.5.","Gold labels and generation gains."],
+  ["14","Repetition counts and waits","Compared controlled words, continuous reading and generated RAVEN prefixes.","Controlled words gave one reversed-order witness and one unknown. Continuous reading gave one matched witness pair.","Two RAVEN ASRs disagreed about completion of the second utterance."],
+  ["15","Adjacent prefixes and occlusion","Rechecked neighboring blocks with two ASRs and zeroed only the fixed audio window.","Both ASRs supported two utterances on the later block. The earlier block remained unknown.","Binding decision time to published PCM and online effect."],
+  ["16","V2 replay and hard negatives","Replayed 64/72 tracks. Found zero eligible same-time, same-length locked pairs.","L 15/48 (3 early, 30 missed). H 15/49 (0 early, 34 missed). A1+B4 fixed one and lost one completion.","216 HIDDEN blocks late to publication. Short dev 0/4. Zero independent online first-stop checks."],
+  ["17","137-entry matrix","Froze the catalog with Base, Small and human-corrected boundary views. Registered 118 checkpoint locations and 114 digests.","Bounded CPU replay repaired one missing-block track. Audited the 45/52 representation mismatch.","Separate fixed and post-hoc results. 15 + 15 + 2 BPE diagnostics need compatible replay."],
+  ["18","Block diagnostics and probe","Replayed fixed thresholds for all 137 entries, audited 17 early Speaker stops, and ran one H/L update each.","63,363 Speaker labels. 208 RAVEN exports in the 14:38:20 snapshot. H/L had one train pair and zero dev.","Human RAVEN review, 36,637 Speaker labels to target, feature encoding and H/L comparison."]
 ];
 
 const openItems = [
-  ["在线首停","同时记录已发布 PCM、特征就绪与下一块 first-NFE 的同钟关系，核验实际触发与语音完整性。"],
-  ["H/L 内容可读性","至少补 5 个 train 来源的 9 个配对前缀、3 个 dev 来源的 6 个配对前缀，并补条件复制和时间捷径见证。"],
-  ["数据准入","继续区分自动银标、人工质量与训练资格。Speaker 当前标签不足 10 万且特征未生成，RAVEN 短台词人工质量通过为 0。"],
-  ["跨域与边界","原生 BPE 复评 32 条诊断项。用匹配台词和物理前缀定位 AudioVAE 与生成 latent 的跨域差异，并独立校准阈值。"]
+  ["Online first stop", "Align published PCM, feature-ready time and the next block’s first NFE. Check stop effect and speech completeness."],
+  ["H/L content", "Need at least nine paired train prefixes from five sources, six dev prefixes from three, and witnesses for script-copy and timing shortcuts."],
+  ["Data readiness", "Speaker is below 100,000 labels and has zero new encodes. RAVEN short-line has zero human quality passes."],
+  ["Cross-domain boundaries", "Replay 32 entries with native BPE. Use matched content and physical prefixes to compare recorded AudioVAE and generated latents, then calibrate independently."]
 ];

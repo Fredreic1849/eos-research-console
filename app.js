@@ -23,7 +23,7 @@ const dayLinks = new Map();
 for (const [day] of [...logs].reverse()) {
   const anchor = make("a", `11-${day}`);
   anchor.href = `#day-2026-11-${day}`;
-  anchor.setAttribute("aria-label", `2026 年 11 月 ${day} 日`);
+  anchor.setAttribute("aria-label", `November ${day}, 2026`);
   el("days").append(anchor);
   dayLinks.set(day, anchor);
 }
@@ -33,7 +33,7 @@ function showDay(day) {
   const timestamp = make("time", `2026-11-${date}`);
   timestamp.dateTime = timestamp.textContent;
   const facts = make("dl");
-  for (const [label, text] of [["工作", work], ["产出与结果", result], ["未核验", open]]) {
+  for (const [label, text] of [["Work", work], ["Result", result], ["Open", open]]) {
     facts.append(make("dt", label), make("dd", text));
   }
   el("day").replaceChildren(timestamp, make("h3", title), facts);
@@ -45,6 +45,9 @@ function showDay(day) {
 function updateRoute() {
   const hash = location.hash || "#overview";
   const date = hash.match(/^#day-2026-11-(\d{2})$/);
+  if (date || hash === "#log") el("log-details").open = true;
+  const target = document.getElementById(hash.slice(1));
+  if (target?.tagName === "DETAILS") target.open = true;
   if (date && dayLinks.has(date[1])) {
     showDay(date[1]);
     el("log").scrollIntoView();
@@ -61,12 +64,12 @@ addEventListener("hashchange", updateRoute);
 updateRoute();
 
 const modes = [
-  ["fixed", "统一 0.5"],
-  ["reference", "参考 0.07"],
-  ["ravenFixed", "同阈值 0.01494821608"],
-  ["historical", "各自历史阈值"],
-  ["best", "事后最高"],
-  ["safe", "事后零提前最高"]
+  ["fixed", "Fixed 0.5"],
+  ["reference", "Reference 0.07"],
+  ["ravenFixed", "Fixed 0.01494821608"],
+  ["historical", "Historical"],
+  ["best", "Best post-hoc"],
+  ["safe", "Best post-hoc, zero early"]
 ];
 const domains = {raven: "RAVEN · Base52", speaker: "Speaker · Base64"};
 const domain = el("domain"), mode = el("mode"), family = el("family");
@@ -111,11 +114,11 @@ function render() {
     const label = make("td");
     const button = make("button", model.id, "name");
     button.type = "button";
-    button.setAttribute("aria-label", `查看 ${model.id} 的逐阈值回放`);
+    button.setAttribute("aria-label", `Open threshold replay for ${model.id}`);
     button.addEventListener("click", () => selectCurve(model, true));
-    label.append(button, make("small", `${model.head} · ${model.checkpoint || "checkpoint 未记录"} · 连续 ${model.consecutive || 1} 块`, "weight"));
+    label.append(button, make("small", `${model.head} · ${model.checkpoint || "unrecorded checkpoint"} · m = ${model.consecutive || 1}`, "weight"));
     const tag = make("td");
-    tag.append(make("span", model.matched ? "一致" : "跨表示诊断", model.matched ? "flag" : "flag diag"));
+    tag.append(make("span", model.matched ? "Matched" : "Cross-representation", model.matched ? "flag" : "flag diag"));
     if (m[7]) tag.append(make("small", `UNKNOWN ${m[7]}`, "weight"));
     const outcome = m[2] ? `${m[3]} / ${m[2]} · ${(100 * rate(m)).toFixed(1)}%` : "NA";
     const values = [format(model.step), format(m[0]), outcome, ...m.slice(4, 7).map(format)];
@@ -123,15 +126,15 @@ function render() {
     return row;
   });
   if (!rows.length) {
-    const empty = make("td", "没有匹配的模型。");
+    const empty = make("td", "No matching checkpoints.");
     empty.colSpan = 8;
     const row = make("tr");
     row.append(empty);
     rows.push(row);
   }
   el("results").replaceChildren(...rows);
-  el("count").textContent = `${scored.length} 条 · 可评分 ${scored.filter(([, m]) => m[2]).length} 条`;
-  el("page").textContent = `${page + 1} / ${pageCount} 页`;
+  el("count").textContent = `${scored.length} entries · ${scored.filter(([, m]) => m[2]).length} scored`;
+  el("page").textContent = `${page + 1} / ${pageCount}`;
   el("previous").disabled = page === 0;
   el("next").disabled = page >= pageCount - 1;
 }
@@ -154,7 +157,7 @@ domain.onchange = () => {
 
 function renderThreshold() {
   const [prob, logit, n, hit, early, late, miss, unknown] = points[Number(el("threshold").value)];
-  const stats = [["命中", hit, "hit"], ["提前", early, "early"], ["迟停", late, "late"], ["未触发", miss, "miss"]];
+  const stats = [["Hit", hit, "hit"], ["Early", early, "early"], ["Late", late, "late"], ["Missed", miss, "miss"]];
   el("tau").textContent = `τ ${format(prob)} · logit ${format(logit)}`;
   const bar = el("curve-bar");
   bar.replaceChildren(...stats.filter(([, value]) => value > 0).map(([, value, color]) => {
@@ -162,13 +165,13 @@ function renderThreshold() {
     segment.style.flex = String(value);
     return segment;
   }));
-  bar.setAttribute("aria-label", `可判 ${n} 条，${stats.map(([label, value]) => `${label} ${format(value)}`).join("，")}`);
+  bar.setAttribute("aria-label", `${n} scorable. ${stats.map(([label, value]) => `${label} ${format(value)}`).join(", ")}`);
   el("curve-legend").replaceChildren(...stats.map(([label, value, color]) => {
     const item = make("span");
     item.append(make("i", undefined, color), `${label} ${format(value)} / ${n}`);
     return item;
   }));
-  if (unknown) el("curve-legend").append(make("span", `另有 UNKNOWN ${unknown} 条`));
+  if (unknown) el("curve-legend").append(make("span", `Unknown ${unknown}`));
 }
 el("threshold").addEventListener("input", renderThreshold);
 
@@ -178,7 +181,7 @@ async function selectCurve(model, scroll = false) {
   const group = domain.value;
   selection = model;
   el("curve").hidden = true;
-  el("curve-state").textContent = "正在读取逐阈值数据…";
+  el("curve-state").textContent = "Loading thresholds…";
   if (scroll) el("thresholds").scrollIntoView();
   try {
     if (!cache.has(group)) cache.set(group, requestJSON(`curves-${group}.json`));
@@ -186,7 +189,7 @@ async function selectCurve(model, scroll = false) {
     if (request !== curveRequest) return;
     points = data[model.id] || [];
     if (!points.length) {
-      el("curve-state").textContent = `${domains[group]} 暂无该权重的兼容阈值回放。`;
+      el("curve-state").textContent = `No compatible replay for this checkpoint on ${domains[group]}.`;
       return;
     }
     const [probability, storedLogit] = model[group][mode.value];
@@ -195,13 +198,13 @@ async function selectCurve(model, scroll = false) {
       Math.abs(point[1] - target) < Math.abs(points[best][1] - target) ? index : best, 0);
     el("threshold").max = String(points.length - 1);
     el("threshold").value = String(nearest);
-    el("curve-model").textContent = `${model.id} · ${domains[group]}${model.matched ? "" : " · 跨表示诊断"}`;
+    el("curve-model").textContent = `${model.id} · ${domains[group]}${model.matched ? "" : " · Cross-representation"}`;
     el("curve").hidden = false;
-    el("curve-state").textContent = `共 ${points.length} 个已保存阈值点。滑杆按 logit 点位排序。`;
+    el("curve-state").textContent = `${points.length} saved thresholds, ordered by logit.`;
     renderThreshold();
   } catch {
     cache.delete(group);
-    if (request === curveRequest) el("curve-state").textContent = "逐阈值数据未能载入，可再次选择版本重试。";
+    if (request === curveRequest) el("curve-state").textContent = "Could not load the curve. Select the checkpoint to retry.";
   }
 }
 

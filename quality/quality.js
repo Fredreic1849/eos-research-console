@@ -7,23 +7,31 @@ const tag = (kind, text, cls) => {
   if (cls) node.className = cls;
   return node;
 };
-const states = {silver:"自动银标", proxy:"评测代理", reviewed:"人工完成上界", unknown:"UNKNOWN", pending:"待标注", error:"记录异常"};
-const durationBins = ["0–<1 秒", "1–<2 秒", "2–<3 秒", "3–<5 秒", "5–<8 秒", "≥8 秒"];
-const timeBins = ["0–<1 秒", "1–<2 秒", "2–<4 秒", "4–<6 秒", "6–<10 秒", "10–<15 秒", "≥15 秒"];
-const formatCount = (n) => n.toLocaleString("zh-CN");
+const states = {silver:"Auto silver", proxy:"Replay proxy", reviewed:"Human upper bound", unknown:"UNKNOWN", pending:"Pending", error:"Error"};
+const durationBins = ["0–<1 s", "1–<2 s", "2–<3 s", "3–<5 s", "5–<8 s", "≥8 s"];
+const timeBins = ["0–<1 s", "1–<2 s", "2–<4 s", "4–<6 s", "6–<10 s", "10–<15 s", "≥15 s"];
+const formatCount = (n) => n.toLocaleString("en-US");
 const percentage = (n, total) => total ? `${(100*n/total).toFixed(total >= 10000 ? 2 : 1)}%` : "—";
 const totalCells = (cells, test=()=>true) => cells.reduce((n,c)=>n+(test(c)?c.at(-1):0),0);
 const dvalue = (span) => span?.length===2 && span[1]>span[0] ? [1,2,3,5,8].filter((edge)=>span[1]-span[0]>=edge).length : -1;
 const filterIds = ["q-domain","q-batch","q-duration","q-status"];
+const batchCopy = {
+  "raven-production": ["Short-line production", "Generated · 18 Nov", "Target span from ASR on the first confirmed physical prefix. DONE uses the native block end."],
+  "speaker-new": ["New alignments", "Recorded · 18 Nov", "CTC span and final-word ±100 ms from the original file clock."],
+  "speaker-historical": ["Historical training labels", "Recorded · historical", "Existing silver labels and source-time alignment intervals."],
+  "raven-eval": ["Base52 replay", "Generated · frozen eval", "64 media items from 72 slots, including one human upper bound. Block times use replay proxies."],
+  "speaker-eval": ["Base64 replay", "Recorded · frozen eval", "64 source videos from test200. Whisper Base span and proxy block end."]
+};
+const batchTitle = (batch) => batchCopy[batch.id]?.[0] ?? batch.title;
 
 function initFilters(batches, change) {
-  byId("q-duration").replaceChildren(new Option("全部",""), ...durationBins.map((x,i)=>new Option(x,i)), new Option("无可核验跨度",-1));
-  byId("q-status").replaceChildren(new Option("全部",""), ...Object.entries(states).map(([k,v])=>new Option(v,k)));
+  byId("q-duration").replaceChildren(new Option("All",""), ...durationBins.map((x,i)=>new Option(x,i)), new Option("No verified span",-1));
+  byId("q-status").replaceChildren(new Option("All",""), ...Object.entries(states).map(([k,v])=>new Option(v,k)));
   const updateBatches = () => {
     const domain = byId("q-domain").value;
     const options = batches.filter((b)=>!domain || b.domain===domain);
     const selected = byId("q-batch").value;
-    byId("q-batch").replaceChildren(new Option("全部",""),...options.map((b)=>new Option(b.title,b.id)));
+    byId("q-batch").replaceChildren(new Option("All",""),...options.map((b)=>new Option(batchTitle(b),b.id)));
     if (options.some((b)=>b.id===selected)) byId("q-batch").value=selected;
   };
   updateBatches();
@@ -46,7 +54,7 @@ function showChart(id, rows, n) {
     row.append(tag("span",label),track,tag("strong",formatCount(count)));
     chart.append(row);
   }
-  byId(id).replaceChildren(n ? chart : tag("p","当前分组没有记录。"));
+  byId(id).replaceChildren(n ? chart : tag("p","No records match the filters."));
 }
 function renderData(data) {
   const draw=()=>{
@@ -63,43 +71,44 @@ function renderData(data) {
     const interval=totalCells(cells,c=>c[4]>=0);
     const uncertain=totalCells(cells,c=>c[1]==="unknown" || c[1]==="error" || c[1]==="pending");
     const flagged=totalCells(cells,c=>c[5]);
-    byId("q-scope").textContent=batch ? groups[0]?.title || "当前筛选" : domain ? `${domain} 全部批次` : "全部批次";
-    byId("q-n").textContent=formatCount(n)+" 条";
+    byId("q-scope").textContent=groups.length === 1 ? batchTitle(groups[0]) : domain ? `${domain} · all batches` : "All batches";
+    byId("q-n").textContent=formatCount(n);
     byId("q-known").textContent=`${formatCount(value)} / ${formatCount(n)}`;
     byId("q-missing").textContent=percentage(n-value,n);
     byId("q-state").textContent=`${formatCount(uncertain)} / ${formatCount(n)}`;
     byId("q-playable").textContent=`${formatCount(totalCells(samples))} / ${formatCount(n)}`;
-    byId("label-note").textContent=`含边界标记的记录 ${formatCount(flagged)} / ${formatCount(n)}。标记可与银标并存。`;
-    byId("done-note").textContent=`${formatCount(done)} / ${formatCount(n)} 条有原生块时间。`;
-    byId("interval-note").textContent=`${formatCount(interval)} / ${formatCount(n)} 条有银标区间，按原片时间计。`;
-    showChart("speech-chart",[...durationBins.map((x,i)=>[x,totalCells(cells,c=>c[2]===i)]),["缺时长",n-value,true]],n);
+    byId("label-note").textContent=`${formatCount(flagged)} / ${formatCount(n)} flagged at the boundary. Flags can coexist with silver labels.`;
+    byId("done-note").textContent=`Native block time for ${formatCount(done)} / ${formatCount(n)}.`;
+    byId("interval-note").textContent=`Source-time silver interval for ${formatCount(interval)} / ${formatCount(n)}.`;
+    showChart("speech-chart",[...durationBins.map((x,i)=>[x,totalCells(cells,c=>c[2]===i)]),["No duration",n-value,true]],n);
     showChart("status-chart",Object.entries(states).map(([k,v])=>[v,totalCells(cells,c=>c[1]===k),["unknown","error","pending"].includes(k)]),n);
-    for (const [id,group,title] of [["done-chart",native,"生产首次确认"],["proxy-chart",proxy,"离线代理应停"]]){
+    for (const [id,group,title] of [["done-chart",native,"Production DONE"],["proxy-chart",proxy,"Replay target"]]){
       const size=totalCells(group), node=byId(id);
       node.hidden=!size;
       if(!size) continue;
-      showChart(id,[...timeBins.map((x,i)=>[x,totalCells(group,c=>c[3]===i)]),["无块时间",totalCells(group,c=>c[3]<0),true]],size);
-      node.prepend(tag("p",`${title} · ${formatCount(size)} 条`));
+      showChart(id,[...timeBins.map((x,i)=>[x,totalCells(group,c=>c[3]===i)]),["No block time",totalCells(group,c=>c[3]<0),true]],size);
+      node.prepend(tag("p",`${title} · ${formatCount(size)} records`));
     }
     showChart("interval-chart",timeBins.map((x,i)=>[x,totalCells(cells,c=>c[4]===i)]),interval);
-    if(!interval) byId("interval-chart").replaceChildren(tag("p","当前范围没有训练对齐区间。"));
+    if(!interval) byId("interval-chart").replaceChildren(tag("p","No training alignment intervals in this selection."));
     const grid=byId("batch-grid");
     grid.replaceChildren(...groups.map((b)=>{
       const card=tag("article"), info=tag("div"), dl=tag("dl");
-      info.append(tag("h3",b.title),tag("small",b.source),tag("p",b.note));
-      for(const [k,v] of [["当前记录",totalCells(b.cells,match)],["原批次来源",b.sources],["私有覆盖",totalCells(b.sample_cells,match)]]){
+      const [, source, note]=batchCopy[b.id] ?? ["",b.source,b.note];
+      info.append(tag("h3",batchTitle(b)),tag("small",source),tag("p",note));
+      for(const [k,v] of [["Records",totalCells(b.cells,match)],["Batch sources",b.sources],["Local coverage",totalCells(b.sample_cells,match)]]){
         const node=tag("div");node.append(tag("dt",k),tag("dd",formatCount(v)));dl.append(node);
       }
-      const pick=tag("button","筛选此批次","button secondary");pick.type="button";
+      const pick=tag("button","Select batch","button secondary");pick.type="button";
       pick.addEventListener("click",()=>{byId("q-domain").value=b.domain; updateBatches();byId("q-batch").value=b.id;draw();byId("q-batch").focus();});
       card.append(info,dl,pick);
       return card;
     }));
   };
   const updateBatches=initFilters(data.batches,draw);
-  byId("snapshot").textContent=`生产快照 ${data.at.slice(0,19).replace("T"," ")}（北京时间）`;
+  byId("snapshot").textContent=`Snapshot ${data.at.slice(0,19).replace("T"," ")} · Beijing time`;
   const status=data.raven_status;
-  byId("quality-notes").textContent=`RAVEN 生产状态回执记录 ${status.complete_exports} 份完整导出、${status.quarantined} 隔离、${status.postprocess_failed} 后处理失败、人工通过 ${status.human_quality_accepted}；清单快照按冻结读取的文件集合统计。RAVEN 评测计划 72 槽，64 条有媒体，缺失 8/72。Speaker 合并清单覆盖 ${formatCount(data.speaker_sources)} 个去重来源；新旧来源可重叠。合并清单只含入选训练标签，拒收和未尝试记录没有同口径分母。各批次时长轴不同，合并只用于清点覆盖。`;
+  byId("quality-notes").textContent=`RAVEN production receipt: ${status.complete_exports} exports, ${status.quarantined} quarantined, ${status.postprocess_failed} postprocess failures and ${status.human_quality_accepted} human quality passes. The manifest is a frozen file scan. RAVEN replay has media for 64 of 72 slots. Speaker covers ${formatCount(data.speaker_sources)} unique sources. Its manifest counts selected labels only. Combined charts show coverage across different timing protocols.`;
   draw();
   byId("loading").hidden=true;
   byId("dashboard").hidden=false;
@@ -108,5 +117,5 @@ if(byId("dashboard")){
   fetch("data.json").then((response)=>{
     if(!response.ok) throw new Error("HTTP "+response.status);
     return response.json();
-  }).then(renderData).catch(()=>{byId("loading").textContent="聚合数据加载失败，请刷新重试。";});
+  }).then(renderData).catch(()=>{byId("loading").textContent="Could not load data. Refresh to retry.";});
 }

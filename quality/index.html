@@ -1,91 +1,91 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="按批次查看 EOS 数据的目标语音时长、完成时间、标签分布与抽查覆盖。">
-  <title>数据质检 · EOS 研究总览</title>
+  <meta name="description" content="Speech duration, completion timing and review coverage by dataset and batch.">
+  <title>Data Quality · EOS</title>
   <link rel="stylesheet" href="../styles.css">
   <link rel="stylesheet" href="quality.css">
   <script src="quality.js" defer></script>
 </head>
 <body>
-  <a class="skip" href="#overview">跳到正文</a>
+  <a class="skip" href="#overview">Skip to content</a>
   <header class="site-header">
     <div class="site-inner">
-      <a class="brand" href="../"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>EOS <span>研究总览</span></a>
-      <nav class="site-nav" aria-label="站点导航">
-        <a href="../">总览</a>
-        <a href="./" aria-current="page">数据质检</a>
-        <a href="../#model">模型</a>
-        <a href="../#evaluation">统一评测</a>
-        <a href="../#log">逐日日志</a>
+      <a class="brand" href="../">EOS <span>Research Console</span></a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="../">Overview</a>
+        <a href="./" aria-current="page">Data quality</a>
+        <a href="../#model">Model</a>
+        <a href="../#evaluation">Evaluation</a>
+        <a href="../#log">Log</a>
       </nav>
     </div>
   </header>
   <main id="overview">
     <header class="page-heading">
-      <h1>数据质检</h1>
-      <p>先选数据范围，再看时长、完成位置与异常样本覆盖。</p>
+      <h1>Data quality</h1>
+      <p>Speech duration and completion evidence by batch.</p>
     </header>
-    <p id="loading" role="status">正在读取聚合数据…</p>
+    <p id="loading" role="status">Loading data…</p>
     <div id="dashboard" hidden>
-      <section class="filter-panel" aria-label="数据筛选">
+      <section class="filter-panel" aria-label="Data filters">
         <div class="filters">
-          <label>数据域<select id="q-domain"><option value="">全部</option><option>RAVEN</option><option>Speaker</option></select></label>
-          <label>批次<select id="q-batch"><option value="">全部</option></select></label>
-          <label>目标语音时长<select id="q-duration"></select></label>
-          <label>标签状态<select id="q-status"></select></label>
+          <label>Dataset<select id="q-domain"><option value="">All</option><option>RAVEN</option><option>Speaker</option></select></label>
+          <label>Batch<select id="q-batch"><option value="">All</option></select></label>
+          <label>Target speech duration<select id="q-duration"></select></label>
+          <label>Label status<select id="q-status"></select></label>
         </div>
       </section>
       <section class="quality-core" id="distributions">
         <aside class="scope" aria-labelledby="q-scope">
-          <p>当前数据范围</p>
+          <p>Selected data</p>
           <h2 id="q-scope"></h2>
           <dl aria-live="polite">
-            <div><dt>分母</dt><dd id="q-n"></dd></div>
-            <div><dt>有时长证据</dt><dd id="q-known"></dd></div>
-            <div><dt>私有审阅覆盖</dt><dd id="q-playable"></dd></div>
+            <div><dt>Records</dt><dd id="q-n"></dd></div>
+            <div><dt>With duration</dt><dd id="q-known"></dd></div>
+            <div><dt>Local review coverage</dt><dd id="q-playable"></dd></div>
           </dl>
           <p id="snapshot"></p>
         </aside>
         <article class="primary-chart">
-          <h2>目标语音时长</h2>
-          <p>从目标开始到最后一词，含中间停顿。使用现有 ASR 或 CTC 的证据跨度。</p>
+          <h2>Target speech duration</h2>
+          <p>First to last target word, including pauses.</p>
           <div id="speech-chart"></div>
         </article>
       </section>
       <section class="quality-section" aria-labelledby="time-title">
-        <div class="section-head"><h2 id="time-title">完成位置</h2><p>生产首次确认、离线代理应停和训练对齐分别计数。</p></div>
+        <div class="section-head"><h2 id="time-title">Completion timing</h2><p>Production, replay and alignment use different clocks.</p></div>
         <div class="chart-grid">
-          <article><h3>首次 DONE 或代理应停块</h3><p id="done-note"></p><div id="done-chart"></div><div id="proxy-chart"></div></article>
-          <article><h3>训练 EOS 区间中值</h3><p id="interval-note"></p><div id="interval-chart"></div></article>
+          <article><h3>First DONE / replay target</h3><p id="done-note"></p><div id="done-chart"></div><div id="proxy-chart"></div></article>
+          <article><h3>Training EOS midpoint</h3><p id="interval-note"></p><div id="interval-chart"></div></article>
         </div>
       </section>
       <section class="quality-section" aria-labelledby="coverage-title">
-        <div class="section-head"><h2 id="coverage-title">标签与缺失</h2><p id="label-note"></p></div>
+        <div class="section-head"><h2 id="coverage-title">Labels and missing data</h2><p id="label-note"></p></div>
         <div class="chart-grid">
-          <article><h3>标签状态</h3><div id="status-chart"></div></article>
+          <article><h3>Label status</h3><div id="status-chart"></div></article>
           <article class="missing-summary">
-            <h3>当前范围的缺口</h3>
+            <h3>Missing evidence</h3>
             <dl>
-              <div><dt>目标时长缺失</dt><dd id="q-missing"></dd></div>
-              <div><dt>UNKNOWN、待标或异常</dt><dd id="q-state"></dd></div>
+              <div><dt>No target duration</dt><dd id="q-missing"></dd></div>
+              <div><dt>Unknown, pending or error</dt><dd id="q-state"></dd></div>
             </dl>
           </article>
         </div>
       </section>
       <section class="quality-section" id="batches">
-        <div class="section-head"><h2>批次与抽查</h2><p>生产池按时长与标签状态分层，冻结评测池覆盖已有媒体。</p></div>
+        <div class="section-head"><h2>Batches</h2></div>
         <div id="batch-grid" class="batch-grid"></div>
         <details class="method-note">
-          <summary>查看统计口径与抽查说明</summary>
+          <summary>Sampling and measurement notes</summary>
           <p id="quality-notes"></p>
-          <p>打开随交付提供的本机样本审阅入口，选择同一批次或标签状态。抽查用于发现问题，生产集通过率需另行估计。</p>
+          <p>Local Sample review supports the same filters. Production samples are stratified by duration and label status. Review coverage measures the number available for inspection.</p>
         </details>
       </section>
     </div>
-    <footer><b>EOS 研究总览</b><a href="#overview">回到顶部 ↑</a></footer>
+    <footer><b>EOS Research Console</b><a href="#overview">Back to top ↑</a></footer>
   </main>
 </body>
 </html>
