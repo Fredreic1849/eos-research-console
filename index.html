@@ -46,10 +46,26 @@
     <section id="motivation">
       <div class="section-head"><h2>Motivation</h2><p>A fixed output length lets the generator repeat a line after it finishes. Stopping at a pause can cut the line short.</p></div>
       <div class="pair motivation-examples">
-        <article class="panel"><h3>Short line</h3><p>Asked to speak once. Whisper Base found four candidate utterances in 10 seconds.</p><small>Starts at 0.00, 1.14, 6.06 and 8.12 s.</small></article>
-        <article class="panel"><h3>Long line</h3><p>Asked to speak once. Whisper Base found three candidate utterances in 15 seconds.</p><small>Starts at 0.54, 4.74 and 9.08 s.</small></article>
+        <article class="panel" id="short-line">
+          <h3>Short line</h3>
+          <video class="demo-video" controls playsinline preload="metadata" aria-label="RAVEN-H3 short-line repetition">
+            <source src="media/short-line-repeat.mp4" type="video/mp4">
+            <a href="media/short-line-repeat.mp4">Open short-line video</a>
+          </video>
+          <p>Whisper Base found four candidate utterances in 10 s.</p>
+          <small>Starts at 0.00, 1.14, 6.06 and 8.12 s.</small>
+        </article>
+        <article class="panel" id="long-line">
+          <h3>Long line</h3>
+          <video class="demo-video" controls playsinline preload="metadata" aria-label="RAVEN-H3 long-line repetition">
+            <source src="media/long-line-repeat.mp4" type="video/mp4">
+            <a href="media/long-line-repeat.mp4">Open long-line video</a>
+          </video>
+          <p>Whisper Base found three candidate utterances in 15 s.</p>
+          <small>Starts at 0.54, 4.74 and 9.08 s.</small>
+        </article>
       </div>
-      <p class="motivation-note">Open <b>Speaking demos</b> in local Sample review for both videos, timestamped ASR and the exact prompts. The short case has a whole-track ASR disagreement.</p>
+      <p class="motivation-note">Both RAVEN-H3 prompts asked for one utterance. Whole-track ASR disagrees on the short line. Full transcripts and prompts are available in local Sample review.</p>
     </section>
 
     <section id="data">
