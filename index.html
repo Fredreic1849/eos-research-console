@@ -6,7 +6,7 @@
   <meta name="description" content="Speech completion for streaming audio-video generation. Research, data, models, and results.">
   <meta name="theme-color" content="#ffffff">
   <title>EOS Research Console</title>
-  <link rel="stylesheet" href="styles.css?v=20261118-en">
+  <link rel="stylesheet" href="styles.css?v=20261118-transcripts">
   <script defer src="research.js?v=20261118-en"></script>
   <script defer src="app.js?v=20261118-en"></script>
 </head>
@@ -52,8 +52,18 @@
             <source src="media/short-line-repeat.mp4" type="video/mp4">
             <a href="media/short-line-repeat.mp4">Open short-line video</a>
           </video>
-          <p>Whisper Base found four candidate utterances in 10 s.</p>
-          <small>Starts at 0.00, 1.14, 6.06 and 8.12 s.</small>
+          <div class="demo-transcript">
+            <h4>Target speech</h4>
+            <p class="target-speech">Welcome back.</p>
+            <h4>Full ASR transcript <small>· Whisper Base</small></h4>
+            <ul class="asr-lines">
+              <li><small>0.00–1.12 s</small><span>Welcome back.</span></li>
+              <li><small>1.14–2.56 s</small><span>Welcome back.</span></li>
+              <li><small>6.06–7.18 s</small><span>Welcome back.</span></li>
+              <li><small>8.12–9.22 s</small><span>Welcome back.</span></li>
+            </ul>
+            <p class="motivation-note">Whole-track Whisper small.en returned one occurrence.</p>
+          </div>
         </article>
         <article class="panel" id="long-line">
           <h3>Long line</h3>
@@ -61,11 +71,19 @@
             <source src="media/long-line-repeat.mp4" type="video/mp4">
             <a href="media/long-line-repeat.mp4">Open long-line video</a>
           </video>
-          <p>Whisper Base found three candidate utterances in 15 s.</p>
-          <small>Starts at 0.54, 4.74 and 9.08 s.</small>
+          <div class="demo-transcript">
+            <h4>Target speech</h4>
+            <p class="target-speech">Before we begin, please put the blue notebook beside the window.</p>
+            <h4>Full ASR transcript <small>· Whisper Base</small></h4>
+            <ul class="asr-lines">
+              <li><small>0.54–4.04 s</small><span>Before we begin, please put the blue note book beside the window.</span></li>
+              <li><small>4.74–8.12 s</small><span>Before we begin, please put the blue note book beside the window.</span></li>
+              <li><small>9.08–13.48 s</small><span>Before we begin, please put the blue note book beside the window.</span></li>
+            </ul>
+          </div>
         </article>
       </div>
-      <p class="motivation-note">Both RAVEN-H3 prompts asked for one utterance. Whole-track ASR disagrees on the short line. Full transcripts and prompts are available in local Sample review.</p>
+      <p class="motivation-note">Both RAVEN-H3 prompts asked for one utterance.</p>
     </section>
 
     <section id="data">

@@ -171,6 +171,12 @@ footer b { color: var(--ink); }
 .motivation-examples .panel, .data-overview .panel { border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 12px 0 1px; }
 .motivation-examples, .data-overview { gap: 12px 26px; }
 .motivation-examples p { margin: 4px 0; }
+.demo-transcript h4 { margin: 13px 0 3px; font-size: 14px; }
+.demo-transcript h4 small { font-weight: normal; }
+.demo-transcript .target-speech { color: var(--ink); }
+.asr-lines { display: grid; gap: 4px; margin: 4px 0 6px; padding: 0; list-style: none; }
+.asr-lines li { display: grid; grid-template-columns: 6.3rem minmax(0, 1fr); gap: 6px; }
+.asr-lines small { font-variant-numeric: tabular-nums; padding-top: 1px; }
 .data-overview h3 small { margin-left: 5px; font-weight: normal; }
 .architecture { margin: 0; }
 .architecture-svg { display: block; width: 100%; height: auto; }
