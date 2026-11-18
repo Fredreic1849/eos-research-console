@@ -6,9 +6,9 @@
   <meta name="description" content="Speech completion for streaming audio-video generation. Research, data, models, and results.">
   <meta name="theme-color" content="#ffffff">
   <title>EOS Research Console</title>
-  <link rel="stylesheet" href="styles.css">
-  <script defer src="research.js"></script>
-  <script defer src="app.js"></script>
+  <link rel="stylesheet" href="styles.css?v=20261118-en">
+  <script defer src="research.js?v=20261118-en"></script>
+  <script defer src="app.js?v=20261118-en"></script>
 </head>
 <body>
   <a class="skip" href="#overview">Skip to content</a>
@@ -63,7 +63,7 @@
     <section id="model">
       <div class="section-head"><h2>EOS Head</h2><p>Each new audio block updates the state and produces a stop score.</p></div>
       <figure class="architecture" aria-labelledby="diagram-caption">
-        <img class="architecture-svg" src="architecture.svg" alt="Audio projection and causal convolutions feed cross-attention with the projected script. A recurrent GRU feeds the stop MLP and the progress pointer. Only the stop branch determines first stop." width="1120" height="348">
+        <img class="architecture-svg" src="architecture.svg?v=20261118-en" alt="Audio projection and causal convolutions feed cross-attention with the projected script. A recurrent GRU feeds the stop MLP and the progress pointer. Only the stop branch determines first stop." width="1120" height="348">
         <ol class="architecture-mobile" aria-label="EOS Head data flow">
           <li><strong>Audio block k</strong><code>LATENT [B,T,64] · HIDDEN [B,T,10752]</code></li>
           <li><strong>Project audio → causal Conv1d ×2</strong><code>LayerNorm + linear → [B,T,256] · kernel 3</code></li>

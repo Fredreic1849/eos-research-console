@@ -42,7 +42,7 @@
   <rect x="247" y="62" width="169" height="89" rx="5" fill="#f2f0f7" stroke="#ccc4db"/>
   <text x="261" y="86" class="name">Project audio</text>
   <text x="261" y="108" class="dims">[B,T,256]</text>
-  <text x="261" y="132" class="detail">2 causal Conv1d · kernel 3</text>
+  <text x="261" y="132" class="detail">Causal Conv1d ×2</text>
 
   <rect x="446" y="62" width="162" height="89" rx="5" fill="#f2f0f7" stroke="#ccc4db"/>
   <text x="460" y="86" class="name">Cross-attention</text>
