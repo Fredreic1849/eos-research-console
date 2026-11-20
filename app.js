@@ -52,7 +52,7 @@ function updateRoute() {
     showDay(date[1]);
     el("log").scrollIntoView();
   }
-  const active = date || hash === "#log" ? "#log" : ["#evaluation", "#thresholds"].includes(hash) ? "#evaluation"
+  const active = date || hash === "#log" ? "#log" : ["#evaluation", "#thresholds", "#asr-baseline", "#asr-failures"].includes(hash) ? "#evaluation"
     : ["#model", "#supervision", "#families", "#model-sources", "#training"].includes(hash) ? "#model" : "#overview";
   document.querySelectorAll(".site-nav a[data-section]").forEach((link) => {
     if (link.hash === active) link.setAttribute("aria-current", active === "#overview" ? "page" : "location");

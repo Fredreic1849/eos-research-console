@@ -106,6 +106,16 @@ tbody td { font-variant-numeric: tabular-nums; }
 .matrix, .probe { margin-top: 12px; }
 .matrix-title { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 7px; }
 .matrix-title a { font-size: 12px; }
+.asr-results { margin-top: 12px; }
+.asr-results section { margin-top: 18px; }
+.asr-results h4, .asr-results h5 { margin: 0; font-size: 15px; }
+.asr-results .table-box { margin-top: 9px; }
+.asr-results .table-box table { min-width: 0; }
+.asr-results th[scope="row"] { white-space: normal; }
+.asr-results td { white-space: nowrap; }
+.asr-results details h5, .asr-results .pair { margin-top: 12px; }
+.asr-results article h5 { margin-top: 3px; }
+.asr-results .asr-note { font-size: 13px; }
 .filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin-top: 10px; }
 .filters label, .slider { display: grid; min-width: 0; gap: 4px; font-size: 13px; color: var(--muted); font-weight: 650; }
 .filters select, .filters input { width: 100%; height: 38px; padding: 0 7px; border: 1px solid #cbd6ce; border-radius: 5px; background: white; font-size: 14px; }
