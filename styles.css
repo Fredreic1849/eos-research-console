@@ -120,6 +120,12 @@ tbody td { font-variant-numeric: tabular-nums; }
 #asr-rule li + li { margin-top: 5px; }
 .asr-results .asr-pair td { white-space: normal; }
 .asr-pair summary { overflow-wrap: anywhere; }
+.paired-media-case { border-top: 1px solid var(--line); padding-top: 15px; }
+.paired-media-case .demo-video { max-width: 750px; }
+.paired-media-case .paired-audio { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 8px 15px; }
+.paired-media-case audio { display: block; width: 100%; margin: 5px 0; }
+.paired-media-case td { white-space: normal; }
+.paired-media-case .evidence-note { color: var(--muted); font-size: 13px; }
 .filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin-top: 10px; }
 .filters label, .slider { display: grid; min-width: 0; gap: 4px; font-size: 13px; color: var(--muted); font-weight: 650; }
 .filters select, .filters input { width: 100%; height: 38px; padding: 0 7px; border: 1px solid #cbd6ce; border-radius: 5px; background: white; font-size: 14px; }

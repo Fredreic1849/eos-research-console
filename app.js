@@ -24,7 +24,7 @@ const experimentDetails = document.querySelectorAll("[data-experiment-day]");
 for (const [day] of [...logs].reverse()) {
   const anchor = make("a", `11-${day}`);
   anchor.href = `#day-2026-11-${day}`;
-  anchor.setAttribute("aria-label", `November ${day}, 2026`);
+  anchor.setAttribute("aria-label", `2026 年 11 月 ${day} 日`);
   el("days").append(anchor);
   dayLinks.set(day, anchor);
 }
@@ -34,8 +34,8 @@ function showDay(day) {
   const timestamp = make("time", `2026-11-${date}`);
   timestamp.dateTime = timestamp.textContent;
   const facts = make("dl");
-  if (method) facts.append(make("dt", "Method"), make("dd", method));
-  for (const [label, text] of [[method ? "Experiment" : "Method / Experiment", work], ["Result", result], ["Open", open]]) {
+  if (method) facts.append(make("dt", "方法"), make("dd", method));
+  for (const [label, text] of [[method ? "实验" : "方法与实验", work], ["结论", result], ["待验证", open]]) {
     facts.append(make("dt", label), make("dd", text));
   }
   el("day").replaceChildren(timestamp, make("h3", title), facts);

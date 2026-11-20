@@ -6,9 +6,9 @@
   <meta name="description" content="Speech completion for streaming audio-video generation. Research, data, models, and results.">
   <meta name="theme-color" content="#ffffff">
   <title>EOS Research Console</title>
-  <link rel="stylesheet" href="styles.css?v=20261120-timeline">
-  <script defer src="research.js?v=20261120-timeline"></script>
-  <script defer src="app.js?v=20261120-timeline"></script>
+  <link rel="stylesheet" href="styles.css?v=20261120-evidence">
+  <script defer src="research.js?v=20261120-evidence"></script>
+  <script defer src="app.js?v=20261120-evidence"></script>
 </head>
 <body>
   <a class="skip" href="#overview">Skip to content</a>
@@ -19,7 +19,7 @@
         <a href="#overview" data-section aria-current="page">Overview</a>
         <a href="quality/">Data quality</a>
         <a href="#model" data-section>Model</a>
-        <a href="#evaluation" data-section>Experiments</a>
+        <a href="#evaluation" data-section lang="zh-Hans">实验日志</a>
       </nav>
     </div>
   </header>
@@ -147,17 +147,17 @@
 
     <section id="evaluation">
       <div class="section-head section-links">
-        <div><h2>Experiments</h2><p>November 2026 · Beijing time</p></div>
-        <a href="#checkpoint-archive">Checkpoint archive →</a>
+        <div lang="zh-Hans"><h2>实验日志</h2><p>2026 年 11 月 · 北京时间</p></div>
+        <a href="#checkpoint-archive">检查点与阈值回放 →</a>
       </div>
       <div class="log-layout" id="log">
-        <nav id="days" aria-label="Experiment dates"></nav>
+        <nav id="days" aria-label="实验日期" lang="zh-Hans"></nav>
         <div class="experiment-day">
-          <article id="day" aria-live="polite"></article>
+          <article id="day" lang="zh-Hans" aria-live="polite"></article>
           <div class="asr-results" id="asr-baseline" data-experiment-day="20">
             <div class="matrix-title">
               <h3>Word-level ASR completion</h3>
-              <div><a href="#asr-rule">Decision rule</a> · <a href="#asr-failure-overlap">Failure overlap</a> · <a href="#asr-head-pairs">Paired cases</a> · <a href="#asr-failures">ASR cases</a></div>
+              <div><a href="#asr-rule">Decision rule</a> · <a href="#asr-failure-overlap">Failure overlap</a> · <a href="#asr-head-pairs">Paired cases</a> · <a href="#paired-media" lang="zh-Hans">音视频证据</a> · <a href="#asr-failures">ASR cases</a></div>
             </div>
             <p>The same Whisper Base model and ordered-word matching rule were used on both benchmarks. All 2,264 scheduled physical prefixes were decoded on CPU (544 RAVEN, 1,720 Speaker).</p>
 
@@ -279,6 +279,126 @@
               <summary>Paired EOS Head cases and overlap</summary>
               <h4 id="asr-head-pairs-title">Paired cases · ASR and EOS Head</h4>
               <p>Eight anonymized examples from 128 same-track pairs. ASR uses physical-prefix Whisper Base with one confirmation. The Head is the selected <code>large_mean/best.pt</code> EOS_LATENT checkpoint at step 2000. Head outcomes cover the saved scoring horizon.</p>
+              <details class="method-note paired-evidence" id="paired-media" lang="zh-Hans">
+                <summary>打开五条 RAVEN 轨迹的音视频和首次 DONE 证据</summary>
+                <h5>可播放的 RAVEN 配对证据</h5>
+                <p>前两条为双方早停。画面及声音来自项目生成轨迹。Speaker 的真实原片、台词及语音保留在本机审阅。</p>
+              <p>RAVEN 的 ASR 使用已发布 PCM，Head 使用原生特征时钟。Speaker 的两列共享原始 PCM 内容时间。实际决策延迟和控制生效时刻未测。整轨播放器包含触发后内容，单独的 ASR 播放器对应实测输入的音频前缀。</p>
+              <section class="paired-media-case" id="raven-18">
+                <h5>RAVEN #18 · 双方早停</h5>
+                <p><b>目标台词</b> <span lang="en">Breathe slowly now.</span> · 1 遍</p>
+                <video class="demo-video" controls playsinline preload="metadata" src="media/paired/raven-18-video.mp4" aria-label="RAVEN #18 原轨迹视频"></video>
+                <div class="paired-audio">
+                  <div><b>整轨音频（含触发后内容）</b><audio controls preload="none" src="media/paired/raven-18-full.wav" aria-label="整轨音频"></audio></div>
+                  <div><b>实际 ASR 触发前缀 · b2 · 0–1.375 s</b><audio controls preload="none" src="media/paired/raven-18-asr.wav" aria-label="实际 ASR 输入前缀"></audio></div>
+                </div>
+                <p><b>该前缀的 ASR 转写</b> <span lang="en">Breathe slowly now.</span></p>
+                <p>完成代理 <b>1.780 s</b> · 额外语音起点代理 <b>2.770 s</b></p>
+                <div class="table-box">
+                  <table aria-label="RAVEN #18 首次 DONE 对照"><thead><tr><th scope="col">事件</th><th scope="col">ASR</th><th scope="col">large_mean Head</th></tr></thead>
+                    <tbody>
+                      <tr><th scope="row">时间轴</th><td>已发布 PCM</td><td>原生特征内容</td></tr>
+                      <tr><th scope="row">首次 DONE</th><td>b2 · 1.375 s</td><td>b0 · 0.725 s</td></tr>
+                      <tr><th scope="row">参考完成块</th><td>b3</td><td>b2</td></tr>
+                      <tr><th scope="row">判定</th><td>早停</td><td>早停</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="evidence-note">Head 阈值 0.01494821608（同测试集事后选取） · 保存评分窗口 b0–b2。</p>
+
+              </section>
+              <section class="paired-media-case" id="raven-54">
+                <h5>RAVEN #54 · 双方早停</h5>
+                <p><b>目标台词</b> <span lang="en">After the varnish dries, arrange the picture frames along the back studio wall.</span> · 1 遍</p>
+                <video class="demo-video" controls playsinline preload="metadata" src="media/paired/raven-54-video.mp4" aria-label="RAVEN #54 原轨迹视频"></video>
+                <div class="paired-audio">
+                  <div><b>整轨音频（含触发后内容）</b><audio controls preload="none" src="media/paired/raven-54-full.wav" aria-label="整轨音频"></audio></div>
+                  <div><b>实际 ASR 触发前缀 · b6 · 0–4.167 s</b><audio controls preload="none" src="media/paired/raven-54-asr.wav" aria-label="实际 ASR 输入前缀"></audio></div>
+                </div>
+                <p><b>该前缀的 ASR 转写</b> <span lang="en">After the varnish dries, arrange the picture frames along the back studio wall.</span></p>
+                <p>完成代理 <b>4.320 s</b> · 额外语音起点代理 <b>未知</b></p>
+                <div class="table-box">
+                  <table aria-label="RAVEN #54 首次 DONE 对照"><thead><tr><th scope="col">事件</th><th scope="col">ASR</th><th scope="col">large_mean Head</th></tr></thead>
+                    <tbody>
+                      <tr><th scope="row">时间轴</th><td>已发布 PCM</td><td>原生特征内容</td></tr>
+                      <tr><th scope="row">首次 DONE</th><td>b6 · 4.167 s</td><td>b4 · 3.550 s</td></tr>
+                      <tr><th scope="row">参考完成块</th><td>b7</td><td>b6</td></tr>
+                      <tr><th scope="row">判定</th><td>早停</td><td>早停</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="evidence-note">Head 阈值 0.01494821608（同测试集事后选取） · 保存评分窗口 b0–b6。</p>
+                <p class="evidence-note">Head 特征就绪时已发布音频至 2.083 s。该值是发布前沿记录。</p>
+              </section>
+              <section class="paired-media-case" id="raven-14">
+                <h5>RAVEN #14</h5>
+                <p><b>目标台词</b> <span lang="en">When the rain stops, bring the woven bookmark outside.</span> · 1 遍</p>
+                <video class="demo-video" controls playsinline preload="metadata" src="media/paired/raven-14-video.mp4" aria-label="RAVEN #14 原轨迹视频"></video>
+                <div class="paired-audio">
+                  <div><b>整轨音频（含触发后内容）</b><audio controls preload="none" src="media/paired/raven-14-full.wav" aria-label="整轨音频"></audio></div>
+                  <div><b>实际 ASR 触发前缀 · b4 · 0–2.792 s</b><audio controls preload="none" src="media/paired/raven-14-asr.wav" aria-label="实际 ASR 输入前缀"></audio></div>
+                </div>
+                <p><b>该前缀的 ASR 转写</b> <span lang="en">When the rain stops, bring the woven bookmark outside.</span></p>
+                <p>完成代理 <b>2.860 s</b> · 额外语音起点代理 <b>3.840 s</b></p>
+                <div class="table-box">
+                  <table aria-label="RAVEN #14 首次 DONE 对照"><thead><tr><th scope="col">事件</th><th scope="col">ASR</th><th scope="col">large_mean Head</th></tr></thead>
+                    <tbody>
+                      <tr><th scope="row">时间轴</th><td>已发布 PCM</td><td>原生特征内容</td></tr>
+                      <tr><th scope="row">首次 DONE</th><td>b4 · 2.792 s</td><td>b4 · 3.550 s</td></tr>
+                      <tr><th scope="row">参考完成块</th><td>b5</td><td>b4</td></tr>
+                      <tr><th scope="row">判定</th><td>早停</td><td>命中参考块</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="evidence-note">Head 阈值 0.01494821608（同测试集事后选取） · 保存评分窗口 b0–b4。</p>
+                <p class="evidence-note">Head 特征就绪时已发布音频至 2.083 s。该值是发布前沿记录。</p>
+              </section>
+              <section class="paired-media-case" id="raven-17">
+                <h5>RAVEN #17</h5>
+                <p><b>目标台词</b> <span lang="en">Breathe slowly.</span> · 1 遍</p>
+                <video class="demo-video" controls playsinline preload="metadata" src="media/paired/raven-17-video.mp4" aria-label="RAVEN #17 原轨迹视频"></video>
+                <div class="paired-audio">
+                  <div><b>整轨音频（含触发后内容）</b><audio controls preload="none" src="media/paired/raven-17-full.wav" aria-label="整轨音频"></audio></div>
+                  <div><b>实际 ASR 触发前缀 · b1 · 0–0.667 s</b><audio controls preload="none" src="media/paired/raven-17-asr.wav" aria-label="实际 ASR 输入前缀"></audio></div>
+                </div>
+                <p><b>该前缀的 ASR 转写</b> <span lang="en">Breathe slowly.</span></p>
+                <p>完成代理 <b>0.660 s</b> · 额外语音起点代理 <b>未知</b></p>
+                <div class="table-box">
+                  <table aria-label="RAVEN #17 首次 DONE 对照"><thead><tr><th scope="col">事件</th><th scope="col">ASR</th><th scope="col">large_mean Head</th></tr></thead>
+                    <tbody>
+                      <tr><th scope="row">时间轴</th><td>已发布 PCM</td><td>原生特征内容</td></tr>
+                      <tr><th scope="row">首次 DONE</th><td>b1 · 0.667 s</td><td>未触发（b0–b0）</td></tr>
+                      <tr><th scope="row">参考完成块</th><td>b1</td><td>b0</td></tr>
+                      <tr><th scope="row">判定</th><td>命中参考块</td><td>保存窗口内未触发</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="evidence-note">Head 阈值 0.01494821608（同测试集事后选取） · 保存评分窗口 b0–b0。</p>
+
+              </section>
+              <section class="paired-media-case" id="raven-00">
+                <h5>RAVEN #00</h5>
+                <p><b>目标台词</b> <span lang="en">The striped cushion looks lovely.</span> · 1 遍</p>
+                <video class="demo-video" controls playsinline preload="metadata" src="media/paired/raven-00-video.mp4" aria-label="RAVEN #00 原轨迹视频"></video>
+                <div class="paired-audio">
+                  <div><b>整轨音频（含触发后内容）</b><audio controls preload="none" src="media/paired/raven-00-full.wav" aria-label="整轨音频"></audio></div>
+                  <div><b>实际 ASR 触发前缀 · b3 · 0–2.083 s</b><audio controls preload="none" src="media/paired/raven-00-asr.wav" aria-label="实际 ASR 输入前缀"></audio></div>
+                </div>
+                <p><b>该前缀的 ASR 转写</b> <span lang="en">The striped cushion looks lovely.</span></p>
+                <p>人工完成上界 <b>2.850 s</b> · 额外语音起点代理 <b>3.680 s</b></p>
+                <div class="table-box">
+                  <table aria-label="RAVEN #00 首次 DONE 对照"><thead><tr><th scope="col">事件</th><th scope="col">ASR</th><th scope="col">large_mean Head</th></tr></thead>
+                    <tbody>
+                      <tr><th scope="row">时间轴</th><td>已发布 PCM</td><td>原生特征内容</td></tr>
+                      <tr><th scope="row">首次 DONE</th><td>b3 · 2.083 s</td><td>b3 · 2.850 s</td></tr>
+                      <tr><th scope="row">参考完成块</th><td>b5</td><td>b3</td></tr>
+                      <tr><th scope="row">判定</th><td>仅有完成上界</td><td>命中参考块</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="evidence-note">Head 阈值 0.01494821608（同测试集事后选取） · 保存评分窗口 b0–b3。</p>
+                <p class="evidence-note">Head 特征就绪时已发布音频至 1.375 s。该值是发布前沿记录。</p>
+              </section></details>
               <section id="asr-failure-overlap" aria-labelledby="asr-overlap-title">
                 <h5 id="asr-overlap-title">Do the failures overlap?</h5>
                 <p>A miss means the first trigger falls outside the reference completion block or no trigger occurs within the saved horizon. On RAVEN each method has its own reference axis: native blocks for the Head and published PCM blocks for ASR.</p>
@@ -302,6 +422,7 @@
                 <p>ASR uses published PCM. The Head uses native feature content and the historical threshold 0.01494821608, selected post hoc on the same test set. Each method is scored against its own reference block. The saved feature-ready mapping is an audio availability snapshot. Relative decision timing remains unknown.</p>
                 <details class="method-note asr-pair" id="raven-pair-1" open>
                   <summary>RAVEN pair 1 · Early / Exact reference block</summary>
+                  <p><a href="#raven-14" lang="zh-Hans">查看对应音视频和实际 ASR 前缀 →</a></p>
                   <p>Completion proxy <b>2.860 s</b> · Extra-speech onset proxy <b>3.840 s</b>.</p>
                   <div class="table-box">
                     <table aria-label="RAVEN pair 1">
@@ -318,6 +439,7 @@
                 </details>
                 <details class="method-note asr-pair" id="raven-pair-2">
                   <summary>RAVEN pair 2 · Exact reference block / No trigger in saved horizon</summary>
+                  <p><a href="#raven-17" lang="zh-Hans">查看对应音视频和实际 ASR 前缀 →</a></p>
                   <p>Completion proxy <b>0.660 s</b> · Extra-speech onset proxy <b>Unknown</b>.</p>
                   <div class="table-box">
                     <table aria-label="RAVEN pair 2">
@@ -334,6 +456,7 @@
                 </details>
                 <details class="method-note asr-pair" id="raven-pair-3">
                   <summary>RAVEN pair 3 · Early / Early</summary>
+                  <p><a href="#raven-54" lang="zh-Hans">查看对应音视频和实际 ASR 前缀 →</a></p>
                   <p>Completion proxy <b>4.320 s</b> · Extra-speech onset proxy <b>Unknown</b>.</p>
                   <div class="table-box">
                     <table aria-label="RAVEN pair 3">
@@ -350,6 +473,7 @@
                 </details>
                 <details class="method-note asr-pair" id="raven-pair-4">
                   <summary>RAVEN pair 4 · Unknown · human upper bound / Exact reference block</summary>
+                  <p><a href="#raven-00" lang="zh-Hans">查看对应音视频和实际 ASR 前缀 →</a></p>
                   <p>Completion upper bound <b>2.850 s</b> · Extra-speech onset proxy <b>3.680 s</b>.</p>
                   <div class="table-box">
                     <table aria-label="RAVEN pair 4">
@@ -492,7 +616,7 @@
             </details>
           </div>
           <details class="method-note" id="checkpoint-archive" data-experiment-day="17" hidden>
-            <summary>Checkpoint archive and threshold replay</summary>
+            <summary lang="zh-Hans">检查点归档与阈值回放</summary>
             <details class="method-note evaluation-method">
               <summary>Protocol and reference results</summary>
               <div class="method-body">
