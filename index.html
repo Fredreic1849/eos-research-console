@@ -6,9 +6,9 @@
   <meta name="description" content="Speech completion for streaming audio-video generation. Research, data, models, and results.">
   <meta name="theme-color" content="#ffffff">
   <title>EOS Research Console</title>
-  <link rel="stylesheet" href="styles.css?v=20261120-pairs">
-  <script defer src="research.js?v=20261120-asr"></script>
-  <script defer src="app.js?v=20261120-pairs"></script>
+  <link rel="stylesheet" href="styles.css?v=20261120-timeline">
+  <script defer src="research.js?v=20261120-timeline"></script>
+  <script defer src="app.js?v=20261120-timeline"></script>
 </head>
 <body>
   <a class="skip" href="#overview">Skip to content</a>
@@ -19,8 +19,7 @@
         <a href="#overview" data-section aria-current="page">Overview</a>
         <a href="quality/">Data quality</a>
         <a href="#model" data-section>Model</a>
-        <a href="#evaluation" data-section>Evaluation</a>
-        <a href="#log" data-section>Log</a>
+        <a href="#evaluation" data-section>Experiments</a>
       </nav>
     </div>
   </header>
@@ -147,379 +146,389 @@
     </section>
 
     <section id="evaluation">
-      <div class="section-head"><h2>Evaluation</h2><p>Speech completion on the frozen offline benchmarks.</p></div>
-      <div class="panel asr-results" id="asr-baseline">
-        <div class="matrix-title">
-          <h3>Word-level ASR completion</h3>
-          <div><a href="#asr-rule">Decision rule</a> · <a href="#asr-failure-overlap">Failure overlap</a> · <a href="#asr-head-pairs">Paired cases</a> · <a href="#asr-failures">ASR cases</a></div>
-        </div>
-        <p>The same Whisper Base model and ordered-word matching rule were used on both benchmarks. All 2,264 scheduled physical prefixes were decoded on CPU (544 RAVEN, 1,720 Speaker).</p>
-
-        <section aria-labelledby="asr-physical-title">
-          <h4 id="asr-physical-title">Physical-prefix ASR · one confirmation</h4>
-          <p>Each decode received only the audio through that prefix. The results measure the audio frontier in an offline run.</p>
-          <div class="table-box" tabindex="0" role="region" aria-labelledby="asr-physical-title">
-            <table>
-              <thead><tr><th scope="col">Metric</th><th scope="col">RAVEN</th><th scope="col">Speaker</th></tr></thead>
-              <tbody>
-                <tr><th scope="row">Registered</th><td>72</td><td>64</td></tr>
-                <tr><th scope="row">Tracks with audio</th><td>64</td><td>64</td></tr>
-                <tr><th scope="row">Missing tracks</th><td>8</td><td>0</td></tr>
-                <tr><th scope="row">Scorable</th><td>51 / 64</td><td>17 / 64</td></tr>
-                <tr><th scope="row">Unknown or unscorable</th><td>13</td><td>47</td></tr>
-                <tr><th scope="row">Exact block</th><td>33 / 51</td><td>12 / 17</td></tr>
-                <tr><th scope="row">Within ±1 block</th><td>51 / 51</td><td>17 / 17</td></tr>
-                <tr><th scope="row">Safe first stop (proxy)</th><td>13 / 27</td><td>12 / 17</td></tr>
-                <tr><th scope="row">Early</th><td>18 / 51</td><td>5 / 17</td></tr>
-                <tr><th scope="row">After extra speech</th><td>2 / 51</td><td>0 / 17</td></tr>
-                <tr><th scope="row">No trigger</th><td>0 / 51</td><td>0 / 17</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <p class="asr-note">Exact and ±1 use the first recorded audio frontier covering the completion reference. Exact can overlap with extra speech. Safe first stop uses only tracks with an extra-speech boundary and requires a trigger at or after completion and before that boundary.</p>
-        </section>
-
-        <section aria-labelledby="asr-confirm-title">
-          <h4 id="asr-confirm-title">Two stable confirmations</h4>
-          <p>RAVEN early stops fell from 18 to 0 and safe stops rose from 13 to 25 of 27. On Speaker, safe stops fell from 12 to 10 of 17 as seven triggers arrived after extra speech.</p>
-          <details class="method-note">
-            <summary>Counts for two confirmations and the exact-word rule</summary>
-          <div class="table-box" tabindex="0" role="region" aria-labelledby="asr-confirm-title">
-            <table>
-              <thead><tr><th scope="col">Metric</th><th scope="col">RAVEN</th><th scope="col">Speaker</th></tr></thead>
-              <tbody>
-                <tr><th scope="row">Scorable</th><td>51 / 64</td><td>17 / 64</td></tr>
-                <tr><th scope="row">Unknown or unscorable</th><td>13</td><td>47</td></tr>
-                <tr><th scope="row">Exact block</th><td>17 / 51</td><td>4 / 17</td></tr>
-                <tr><th scope="row">Within ±1 block</th><td>50 / 51</td><td>13 / 17</td></tr>
-                <tr><th scope="row">Safe first stop (proxy)</th><td>25 / 27</td><td>10 / 17</td></tr>
-                <tr><th scope="row">Early</th><td>0 / 51</td><td>0 / 17</td></tr>
-                <tr><th scope="row">After extra speech</th><td>2 / 51</td><td>7 / 17</td></tr>
-                <tr><th scope="row">No trigger</th><td>0 / 51</td><td>0 / 17</td></tr>
-              </tbody>
-            </table>
-          </div>
-            <h5 id="asr-exact-title">Exact words · one confirmation</h5>
-          <div class="table-box" tabindex="0" role="region" aria-labelledby="asr-exact-title">
-            <table>
-              <thead><tr><th scope="col">Metric</th><th scope="col">RAVEN</th><th scope="col">Speaker</th></tr></thead>
-              <tbody>
-                <tr><th scope="row">Scorable</th><td>51 / 64</td><td>17 / 64</td></tr>
-                <tr><th scope="row">Unknown or unscorable</th><td>13</td><td>47</td></tr>
-                <tr><th scope="row">Exact block</th><td>25 / 51</td><td>9 / 17</td></tr>
-                <tr><th scope="row">Within ±1 block</th><td>40 / 51</td><td>13 / 17</td></tr>
-                <tr><th scope="row">Safe first stop (proxy)</th><td>9 / 27</td><td>10 / 17</td></tr>
-                <tr><th scope="row">Early</th><td>15 / 51</td><td>3 / 17</td></tr>
-                <tr><th scope="row">After extra speech</th><td>1 / 51</td><td>2 / 17</td></tr>
-                <tr><th scope="row">No trigger</th><td>10 / 51</td><td>2 / 17</td></tr>
-              </tbody>
-            </table>
-          </div>
-          </details>
-        </section>
-
-        <section aria-labelledby="asr-replay-title">
-          <h4 id="asr-replay-title">Whole-track word-time replay · non-causal</h4>
-          <p>Whisper Base saw the full audio before the word times were replayed. The completion references also use Whisper Base, and Speaker was screened with that proxy.</p>
-          <div class="table-box" tabindex="0" role="region" aria-labelledby="asr-replay-title">
-            <table>
-              <thead><tr><th scope="col">Metric</th><th scope="col">RAVEN</th><th scope="col">Speaker</th></tr></thead>
-              <tbody>
-                <tr><th scope="row">Scorable</th><td>49 / 64</td><td>17 / 64</td></tr>
-                <tr><th scope="row">Unknown or unscorable</th><td>15</td><td>47</td></tr>
-                <tr><th scope="row">Exact block</th><td>49 / 49</td><td>17 / 17</td></tr>
-                <tr><th scope="row">Within ±1 block</th><td>49 / 49</td><td>17 / 17</td></tr>
-                <tr><th scope="row">Safe first stop (proxy)</th><td>24 / 26</td><td>17 / 17</td></tr>
-                <tr><th scope="row">Early</th><td>0 / 49</td><td>0 / 17</td></tr>
-                <tr><th scope="row">After extra speech</th><td>2 / 49</td><td>0 / 17</td></tr>
-                <tr><th scope="row">No trigger</th><td>0 / 49</td><td>0 / 17</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <p class="asr-note">Two RAVEN replay tracks were unscorable because the frozen ASR log revision could not be verified. Both had new physical-prefix decodes.</p>
-        </section>
-
-        <section id="asr-rule" aria-labelledby="asr-rule-title">
-          <h4 id="asr-rule-title">How ASR decides that the target is complete</h4>
-          <ol>
-            <li><b>Decode the audio prefix.</b> Whisper Base reads the available samples from time zero through the current frontier. Each decode has an empty initial prompt and previous-text conditioning is disabled. The matching rule receives the target after decoding.</li>
-            <li><b>Normalize and match words.</b> Apply Unicode NFKC and case folding, remove in-word apostrophes, expand supported standalone integers, then tokenize. Scan candidate endings in order. Within a window of at most <var>N</var> + 4 words for an <var>N</var>-word target, ordered matching blocks from <code>SequenceMatcher</code> must cover at least 75% of target words. The window’s final word must have character similarity of at least 0.80 to the target’s final word.</li>
-            <li><b>Count separate occurrences and trigger.</b> At the earliest qualifying end, choose the highest coverage and then the latest start. Resume after the accepted span. The first prefix that reaches the required number of nonoverlapping matches triggers. Transcript matching is the sole decision input, with no independent silence or VAD threshold.</li>
-            <li><b>Choose a confirmation policy.</b> One confirmation checks the current normalized transcript. Two confirmations check the longest common word prefix of the current and immediately preceding decodes on successive new audio prefixes. The exact-word comparator requires a contiguous exact match after normalization.</li>
-          </ol>
-          <p><b>Illustrative target</b> “Bring the green book.” The benchmark tracks all require one occurrence.</p>
-          <ul>
-            <li>“Bring the green” reaches 3/4 coverage and fails the final-word check.</li>
-            <li>“Bring a green book” reaches 3/4 coverage and passes the final-word check. It triggers for a one-occurrence target.</li>
-            <li>“Bring the green book” once yields one match. A two-occurrence target needs a separate second match.</li>
-            <li>With two confirmations, “Bring the green” followed by “Bring the green book” yields the shared prefix “Bring the green.” A subsequent decode must preserve the final word in the common prefix.</li>
-          </ul>
-        </section>
-
-        <details class="method-note">
-          <summary>References and latency</summary>
-          <div class="method-body">
-            <p>RAVEN uses the published-sample clock from Base-only v1, including one human completion upper bound. Speaker uses the original-recording clock from Base64 v1. Forty-seven Speaker tracks lack a causal target-activation marker after prior speech, so their first-stop status is unknown.</p>
-            <p>CPU decode time per prefix was 0.70 s at p50 and 1.83 s at p95. Live publication and controller latency remain unmeasured.</p>
-          </div>
-        </details>
-
-        <section id="asr-head-pairs" aria-labelledby="asr-head-pairs-title">
-          <h4 id="asr-head-pairs-title">Paired cases · ASR and EOS Head</h4>
-          <p>Eight anonymized examples from 128 same-track pairs. ASR uses physical-prefix Whisper Base with one confirmation. The Head is the selected <code>large_mean/best.pt</code> EOS_LATENT checkpoint at step 2000. Head outcomes cover the saved scoring horizon.</p>
-          <section id="asr-failure-overlap" aria-labelledby="asr-overlap-title">
-            <h5 id="asr-overlap-title">Do the failures overlap?</h5>
-            <p>A miss means the first trigger falls outside the reference completion block or no trigger occurs within the saved horizon. On RAVEN each method has its own reference axis: native blocks for the Head and published PCM blocks for ASR.</p>
-            <div class="table-box" tabindex="0" role="region" aria-labelledby="asr-overlap-title">
-              <table>
-                <thead><tr><th scope="col">Reference-block outcome</th><th scope="col">RAVEN</th><th scope="col">Speaker</th></tr></thead>
-                <tbody>
-                  <tr><th scope="row">Scorable pairs</th><td>51 / 64</td><td>17 / 64</td></tr>
-                  <tr><th scope="row">ASR alone missed</th><td>16</td><td>4</td></tr>
-                  <tr><th scope="row">Head alone missed</th><td>7</td><td>9</td></tr>
-                  <tr><th scope="row">Both missed</th><td>2</td><td>1</td></tr>
-                  <tr><th scope="row">Either missed</th><td>25</td><td>14</td></tr>
-                  <tr><th scope="row">Overlap among misses</th><td>2 / 25 (8.0%)</td><td>1 / 14 (7.1%)</td></tr>
-                </tbody>
-              </table>
+      <div class="section-head section-links">
+        <div><h2>Experiments</h2><p>November 2026 · Beijing time</p></div>
+        <a href="#checkpoint-archive">Checkpoint archive →</a>
+      </div>
+      <div class="log-layout" id="log">
+        <nav id="days" aria-label="Experiment dates"></nav>
+        <div class="experiment-day">
+          <article id="day" aria-live="polite"></article>
+          <div class="asr-results" id="asr-baseline" data-experiment-day="20">
+            <div class="matrix-title">
+              <h3>Word-level ASR completion</h3>
+              <div><a href="#asr-rule">Decision rule</a> · <a href="#asr-failure-overlap">Failure overlap</a> · <a href="#asr-head-pairs">Paired cases</a> · <a href="#asr-failures">ASR cases</a></div>
             </div>
-            <p>In all three shared misses, both methods triggered early relative to their own references. Gender was annotated in 0 of 128 benchmark tracks, so concentration among men cannot be tested.</p>
-          </section>
-          <section aria-labelledby="asr-head-raven-title">
-            <h5 id="asr-head-raven-title">RAVEN · separate clocks</h5>
-            <p>ASR uses published PCM. The Head uses native feature content and the historical threshold 0.01494821608, selected post hoc on the same test set. Each method is scored against its own reference block. The saved feature-ready mapping is an audio availability snapshot. Relative decision timing remains unknown.</p>
-            <details class="method-note asr-pair" id="raven-pair-1" open>
-              <summary>RAVEN pair 1 · Early / Exact reference block</summary>
-              <p>Completion proxy <b>2.860 s</b> · Extra-speech onset proxy <b>3.840 s</b>.</p>
-              <div class="table-box">
-                <table aria-label="RAVEN pair 1">
-                  <thead><tr><th scope="col">Measurement</th><th scope="col">ASR</th><th scope="col">EOS Head</th></tr></thead>
-                  <tbody>
-                  <tr><th scope="row">Clock</th><td>Published pcm content</td><td>Native feature content</td></tr>
-                  <tr><th scope="row">First trigger</th><td>b4 · 2.792 s</td><td>b4 · 3.550 s</td></tr>
-                  <tr><th scope="row">Reference block</th><td>b5</td><td>b4</td></tr>
-                  <tr><th scope="row">Outcome</th><td>Early</td><td>Exact reference block</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <p class="asr-note">Head has 5 saved score blocks. Safety proxy: Unknown across clocks. Published PCM available when the Head feature became ready: 2.083 s.</p>
-            </details>
-            <details class="method-note asr-pair" id="raven-pair-2">
-              <summary>RAVEN pair 2 · Exact reference block / No trigger in saved horizon</summary>
-              <p>Completion proxy <b>0.660 s</b> · Extra-speech onset proxy <b>Unknown</b>.</p>
-              <div class="table-box">
-                <table aria-label="RAVEN pair 2">
-                  <thead><tr><th scope="col">Measurement</th><th scope="col">ASR</th><th scope="col">EOS Head</th></tr></thead>
-                  <tbody>
-                  <tr><th scope="row">Clock</th><td>Published pcm content</td><td>Native feature content</td></tr>
-                  <tr><th scope="row">First trigger</th><td>b1 · 0.667 s</td><td>No trigger</td></tr>
-                  <tr><th scope="row">Reference block</th><td>b1</td><td>b0</td></tr>
-                  <tr><th scope="row">Outcome</th><td>Exact reference block</td><td>No trigger in saved horizon</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <p class="asr-note">Head has 1 saved score blocks. Safety proxy: Unknown across clocks.</p>
-            </details>
-            <details class="method-note asr-pair" id="raven-pair-3">
-              <summary>RAVEN pair 3 · Early / Early</summary>
-              <p>Completion proxy <b>4.320 s</b> · Extra-speech onset proxy <b>Unknown</b>.</p>
-              <div class="table-box">
-                <table aria-label="RAVEN pair 3">
-                  <thead><tr><th scope="col">Measurement</th><th scope="col">ASR</th><th scope="col">EOS Head</th></tr></thead>
-                  <tbody>
-                  <tr><th scope="row">Clock</th><td>Published pcm content</td><td>Native feature content</td></tr>
-                  <tr><th scope="row">First trigger</th><td>b6 · 4.167 s</td><td>b4 · 3.550 s</td></tr>
-                  <tr><th scope="row">Reference block</th><td>b7</td><td>b6</td></tr>
-                  <tr><th scope="row">Outcome</th><td>Early</td><td>Early</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <p class="asr-note">Head has 7 saved score blocks. Safety proxy: Unknown across clocks. Published PCM available when the Head feature became ready: 2.083 s.</p>
-            </details>
-            <details class="method-note asr-pair" id="raven-pair-4">
-              <summary>RAVEN pair 4 · Unknown · human upper bound / Exact reference block</summary>
-              <p>Completion upper bound <b>2.850 s</b> · Extra-speech onset proxy <b>3.680 s</b>.</p>
-              <div class="table-box">
-                <table aria-label="RAVEN pair 4">
-                  <thead><tr><th scope="col">Measurement</th><th scope="col">ASR</th><th scope="col">EOS Head</th></tr></thead>
-                  <tbody>
-                  <tr><th scope="row">Clock</th><td>Published pcm content</td><td>Native feature content</td></tr>
-                  <tr><th scope="row">First trigger</th><td>b3 · 2.083 s</td><td>b3 · 2.850 s</td></tr>
-                  <tr><th scope="row">Reference block</th><td>b5</td><td>b3</td></tr>
-                  <tr><th scope="row">Outcome</th><td>Unknown · human upper bound</td><td>Exact reference block</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <p class="asr-note">Head has 4 saved score blocks. Safety proxy: Unknown across clocks. Published PCM available when the Head feature became ready: 1.375 s.</p>
-            </details>
-          </section>
-          <section aria-labelledby="asr-head-speaker-title">
-            <h5 id="asr-head-speaker-title">Speaker · original PCM content clock</h5>
-            <p>Both methods use original PCM content time. The Head threshold is fixed at 0.5. Among 17 scorable pairs, both hit the reference block in 3, ASR alone in 9, the Head alone in 4, and neither in 1. The other 47 lack a causal activation marker. Wall-clock decision timing remains unverified.</p>
-            <details class="method-note asr-pair" id="speaker-pair-5" open>
-              <summary>Speaker pair 1 · Early / Exact reference block</summary>
-              <p>Completion proxy <b>5.080 s</b> · Extra-speech onset proxy <b>6.410 s</b>.</p>
-              <div class="table-box">
-                <table aria-label="Speaker pair 1">
-                  <thead><tr><th scope="col">Measurement</th><th scope="col">ASR</th><th scope="col">EOS Head</th></tr></thead>
-                  <tbody>
-                  <tr><th scope="row">Clock</th><td>Original pcm content</td><td>Original pcm content</td></tr>
-                  <tr><th scope="row">First trigger</th><td>b6 · 4.975 s</td><td>b7 · 5.675 s</td></tr>
-                  <tr><th scope="row">Reference block</th><td>b7</td><td>b7</td></tr>
-                  <tr><th scope="row">Outcome</th><td>Early</td><td>Exact reference block</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <p class="asr-note">Head has 9 saved score blocks. Safety proxy: Safe by content frontier.</p>
-            </details>
-            <details class="method-note asr-pair" id="speaker-pair-6">
-              <summary>Speaker pair 2 · Exact reference block / No trigger in saved horizon</summary>
-              <p>Completion proxy <b>1.960 s</b> · Extra-speech onset proxy <b>3.340 s</b>.</p>
-              <div class="table-box">
-                <table aria-label="Speaker pair 2">
-                  <thead><tr><th scope="col">Measurement</th><th scope="col">ASR</th><th scope="col">EOS Head</th></tr></thead>
-                  <tbody>
-                  <tr><th scope="row">Clock</th><td>Original pcm content</td><td>Original pcm content</td></tr>
-                  <tr><th scope="row">First trigger</th><td>b2 · 2.125 s</td><td>No trigger</td></tr>
-                  <tr><th scope="row">Reference block</th><td>b2</td><td>b2</td></tr>
-                  <tr><th scope="row">Outcome</th><td>Exact reference block</td><td>No trigger in saved horizon</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <p class="asr-note">Head has 4 saved score blocks. Safety proxy: No trigger in saved horizon.</p>
-            </details>
-            <details class="method-note asr-pair" id="speaker-pair-7">
-              <summary>Speaker pair 3 · Early / Early</summary>
-              <p>Completion proxy <b>5.960 s</b> · Extra-speech onset proxy <b>6.460 s</b>.</p>
-              <div class="table-box">
-                <table aria-label="Speaker pair 3">
-                  <thead><tr><th scope="col">Measurement</th><th scope="col">ASR</th><th scope="col">EOS Head</th></tr></thead>
-                  <tbody>
-                  <tr><th scope="row">Clock</th><td>Original pcm content</td><td>Original pcm content</td></tr>
-                  <tr><th scope="row">First trigger</th><td>b7 · 5.675 s</td><td>b5 · 4.250 s</td></tr>
-                  <tr><th scope="row">Reference block</th><td>b8</td><td>b8</td></tr>
-                  <tr><th scope="row">Outcome</th><td>Early</td><td>Early</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <p class="asr-note">Head has 9 saved score blocks. Safety proxy: Before completion.</p>
-            </details>
-            <details class="method-note asr-pair" id="speaker-pair-8">
-              <summary>Speaker pair 4 · Unknown target activation / Early (legacy)</summary>
-              <p>Completion proxy <b>10.240 s</b> · Extra-speech onset proxy <b>10.710 s</b>.</p>
-              <div class="table-box">
-                <table aria-label="Speaker pair 4">
-                  <thead><tr><th scope="col">Measurement</th><th scope="col">ASR</th><th scope="col">EOS Head</th></tr></thead>
-                  <tbody>
-                  <tr><th scope="row">Clock</th><td>Original pcm content</td><td>Original pcm content</td></tr>
-                  <tr><th scope="row">First trigger</th><td>b14 · 10.625 s</td><td>b7 · 5.675 s</td></tr>
-                  <tr><th scope="row">Reference block</th><td>b14</td><td>b14</td></tr>
-                  <tr><th scope="row">Outcome</th><td>Unknown target activation</td><td>Early (legacy)</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <p class="asr-note">Head has 15 saved score blocks. Safety proxy: Unknown activation.</p>
-            </details>
-          </section>
-        </section>
+            <p>The same Whisper Base model and ordered-word matching rule were used on both benchmarks. All 2,264 scheduled physical prefixes were decoded on CPU (544 RAVEN, 1,720 Speaker).</p>
 
-        <section id="asr-failures" aria-labelledby="asr-failure-title">
-          <h4 id="asr-failure-title">Failure and unknown cases</h4>
-          <p>Anonymous diagnostics from the physical-prefix run. Source media and transcripts are available in the private review.</p>
-          <div class="pair">
-            <article class="panel">
-              <small>RAVEN 1 · 1 confirmation</small>
-              <h5>Late after extra speech</h5>
-              <p>The match came after the extra-speech boundary. It still landed on the exact reference block.</p>
-              <p>Completion reference <b>1.580 s</b> · Trigger <b>2.083 s</b></p>
-            </article>
-            <article class="panel">
-              <small>RAVEN 2 · 1 confirmation</small>
-              <h5>Early</h5>
-              <p>The match came before the frozen completion proxy.</p>
-              <p>Completion reference <b>2.860 s</b> · Trigger <b>2.792 s</b></p>
-            </article>
-            <article class="panel">
-              <small>RAVEN 3 · 1 confirmation</small>
-              <h5>Unknown reference</h5>
-              <p>The reference could not establish when the line ended.</p>
-              <p>Completion reference <b>unknown</b> · Trigger <b>none</b></p>
-            </article>
-            <article class="panel">
-              <small>RAVEN 4 · 1 confirmation</small>
-              <h5>Unknown completion time</h5>
-              <p>Human review established a completion upper bound. An earlier trigger is inconclusive.</p>
-              <p>Completion upper bound <b>2.850 s</b> · Trigger <b>2.083 s</b></p>
-            </article>
-            <article class="panel">
-              <small>Speaker 5 · 1 confirmation</small>
-              <h5>Early</h5>
-              <p>The match came before the frozen completion proxy.</p>
-              <p>Completion reference <b>5.080 s</b> · Trigger <b>4.975 s</b></p>
-            </article>
-            <article class="panel">
-              <small>Speaker 6 · 1 confirmation</small>
-              <h5>Unknown target activation</h5>
-              <p>Prior speech preceded the target. The trigger cannot be assigned to the intended turn.</p>
-              <p>Completion reference <b>10.240 s</b> · Trigger <b>10.625 s</b></p>
-            </article>
-            <article class="panel">
-              <small>Speaker 7 · 2 confirmations</small>
-              <h5>Late after extra speech</h5>
-              <p>A second stable confirmation arrived after additional speech began.</p>
-              <p>Completion reference <b>5.960 s</b> · Trigger <b>9.925 s</b></p>
-            </article>
-            <article class="panel">
-              <small>RAVEN 8 · Exact words</small>
-              <h5>No trigger</h5>
-              <p>The exact-word rule never matched in the tested prefixes.</p>
-              <p>Completion reference <b>1.740 s</b> · Trigger <b>none</b></p>
-            </article>
+            <details class="method-note" id="asr-tables">
+              <summary>RAVEN / Speaker benchmark tables</summary>
+            <section aria-labelledby="asr-physical-title">
+              <h4 id="asr-physical-title">Physical-prefix ASR · one confirmation</h4>
+              <p>Each decode received only the audio through that prefix. The results measure the audio frontier in an offline run.</p>
+              <div class="table-box" tabindex="0" role="region" aria-labelledby="asr-physical-title">
+                <table>
+                  <thead><tr><th scope="col">Metric</th><th scope="col">RAVEN</th><th scope="col">Speaker</th></tr></thead>
+                  <tbody>
+                    <tr><th scope="row">Registered</th><td>72</td><td>64</td></tr>
+                    <tr><th scope="row">Tracks with audio</th><td>64</td><td>64</td></tr>
+                    <tr><th scope="row">Missing tracks</th><td>8</td><td>0</td></tr>
+                    <tr><th scope="row">Scorable</th><td>51 / 64</td><td>17 / 64</td></tr>
+                    <tr><th scope="row">Unknown or unscorable</th><td>13</td><td>47</td></tr>
+                    <tr><th scope="row">Exact block</th><td>33 / 51</td><td>12 / 17</td></tr>
+                    <tr><th scope="row">Within ±1 block</th><td>51 / 51</td><td>17 / 17</td></tr>
+                    <tr><th scope="row">Safe first stop (proxy)</th><td>13 / 27</td><td>12 / 17</td></tr>
+                    <tr><th scope="row">Early</th><td>18 / 51</td><td>5 / 17</td></tr>
+                    <tr><th scope="row">After extra speech</th><td>2 / 51</td><td>0 / 17</td></tr>
+                    <tr><th scope="row">No trigger</th><td>0 / 51</td><td>0 / 17</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="asr-note">Exact and ±1 use the first recorded audio frontier covering the completion reference. Exact can overlap with extra speech. Safe first stop uses only tracks with an extra-speech boundary and requires a trigger at or after completion and before that boundary.</p>
+            </section>
+
+            <section aria-labelledby="asr-confirm-title">
+              <h4 id="asr-confirm-title">Two stable confirmations</h4>
+              <p>RAVEN early stops fell from 18 to 0 and safe stops rose from 13 to 25 of 27. On Speaker, safe stops fell from 12 to 10 of 17 as seven triggers arrived after extra speech.</p>
+              <details class="method-note">
+                <summary>Counts for two confirmations and the exact-word rule</summary>
+              <div class="table-box" tabindex="0" role="region" aria-labelledby="asr-confirm-title">
+                <table>
+                  <thead><tr><th scope="col">Metric</th><th scope="col">RAVEN</th><th scope="col">Speaker</th></tr></thead>
+                  <tbody>
+                    <tr><th scope="row">Scorable</th><td>51 / 64</td><td>17 / 64</td></tr>
+                    <tr><th scope="row">Unknown or unscorable</th><td>13</td><td>47</td></tr>
+                    <tr><th scope="row">Exact block</th><td>17 / 51</td><td>4 / 17</td></tr>
+                    <tr><th scope="row">Within ±1 block</th><td>50 / 51</td><td>13 / 17</td></tr>
+                    <tr><th scope="row">Safe first stop (proxy)</th><td>25 / 27</td><td>10 / 17</td></tr>
+                    <tr><th scope="row">Early</th><td>0 / 51</td><td>0 / 17</td></tr>
+                    <tr><th scope="row">After extra speech</th><td>2 / 51</td><td>7 / 17</td></tr>
+                    <tr><th scope="row">No trigger</th><td>0 / 51</td><td>0 / 17</td></tr>
+                  </tbody>
+                </table>
+              </div>
+                <h5 id="asr-exact-title">Exact words · one confirmation</h5>
+              <div class="table-box" tabindex="0" role="region" aria-labelledby="asr-exact-title">
+                <table>
+                  <thead><tr><th scope="col">Metric</th><th scope="col">RAVEN</th><th scope="col">Speaker</th></tr></thead>
+                  <tbody>
+                    <tr><th scope="row">Scorable</th><td>51 / 64</td><td>17 / 64</td></tr>
+                    <tr><th scope="row">Unknown or unscorable</th><td>13</td><td>47</td></tr>
+                    <tr><th scope="row">Exact block</th><td>25 / 51</td><td>9 / 17</td></tr>
+                    <tr><th scope="row">Within ±1 block</th><td>40 / 51</td><td>13 / 17</td></tr>
+                    <tr><th scope="row">Safe first stop (proxy)</th><td>9 / 27</td><td>10 / 17</td></tr>
+                    <tr><th scope="row">Early</th><td>15 / 51</td><td>3 / 17</td></tr>
+                    <tr><th scope="row">After extra speech</th><td>1 / 51</td><td>2 / 17</td></tr>
+                    <tr><th scope="row">No trigger</th><td>10 / 51</td><td>2 / 17</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              </details>
+            </section>
+
+            <section aria-labelledby="asr-replay-title">
+              <h4 id="asr-replay-title">Whole-track word-time replay · non-causal</h4>
+              <p>Whisper Base saw the full audio before the word times were replayed. The completion references also use Whisper Base, and Speaker was screened with that proxy.</p>
+              <div class="table-box" tabindex="0" role="region" aria-labelledby="asr-replay-title">
+                <table>
+                  <thead><tr><th scope="col">Metric</th><th scope="col">RAVEN</th><th scope="col">Speaker</th></tr></thead>
+                  <tbody>
+                    <tr><th scope="row">Scorable</th><td>49 / 64</td><td>17 / 64</td></tr>
+                    <tr><th scope="row">Unknown or unscorable</th><td>15</td><td>47</td></tr>
+                    <tr><th scope="row">Exact block</th><td>49 / 49</td><td>17 / 17</td></tr>
+                    <tr><th scope="row">Within ±1 block</th><td>49 / 49</td><td>17 / 17</td></tr>
+                    <tr><th scope="row">Safe first stop (proxy)</th><td>24 / 26</td><td>17 / 17</td></tr>
+                    <tr><th scope="row">Early</th><td>0 / 49</td><td>0 / 17</td></tr>
+                    <tr><th scope="row">After extra speech</th><td>2 / 49</td><td>0 / 17</td></tr>
+                    <tr><th scope="row">No trigger</th><td>0 / 49</td><td>0 / 17</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="asr-note">Two RAVEN replay tracks were unscorable because the frozen ASR log revision could not be verified. Both had new physical-prefix decodes.</p>
+            </section>
+
+            </details>
+
+            <details class="method-note" id="asr-rule">
+              <summary>ASR decision rule</summary>
+              <h4 id="asr-rule-title">How ASR decides that the target is complete</h4>
+              <ol>
+                <li><b>Decode the audio prefix.</b> Whisper Base reads the available samples from time zero through the current frontier. Each decode has an empty initial prompt and previous-text conditioning is disabled. The matching rule receives the target after decoding.</li>
+                <li><b>Normalize and match words.</b> Apply Unicode NFKC and case folding, remove in-word apostrophes, expand supported standalone integers, then tokenize. Scan candidate endings in order. Within a window of at most <var>N</var> + 4 words for an <var>N</var>-word target, ordered matching blocks from <code>SequenceMatcher</code> must cover at least 75% of target words. The window’s final word must have character similarity of at least 0.80 to the target’s final word.</li>
+                <li><b>Count separate occurrences and trigger.</b> At the earliest qualifying end, choose the highest coverage and then the latest start. Resume after the accepted span. The first prefix that reaches the required number of nonoverlapping matches triggers. Transcript matching is the sole decision input, with no independent silence or VAD threshold.</li>
+                <li><b>Choose a confirmation policy.</b> One confirmation checks the current normalized transcript. Two confirmations check the longest common word prefix of the current and immediately preceding decodes on successive new audio prefixes. The exact-word comparator requires a contiguous exact match after normalization.</li>
+              </ol>
+              <p><b>Illustrative target</b> “Bring the green book.” The benchmark tracks all require one occurrence.</p>
+              <ul>
+                <li>“Bring the green” reaches 3/4 coverage and fails the final-word check.</li>
+                <li>“Bring a green book” reaches 3/4 coverage and passes the final-word check. It triggers for a one-occurrence target.</li>
+                <li>“Bring the green book” once yields one match. A two-occurrence target needs a separate second match.</li>
+                <li>With two confirmations, “Bring the green” followed by “Bring the green book” yields the shared prefix “Bring the green.” A subsequent decode must preserve the final word in the common prefix.</li>
+              </ul>
+            </details>
+
+            <details class="method-note">
+              <summary>References and latency</summary>
+              <div class="method-body">
+                <p>RAVEN uses the published-sample clock from Base-only v1, including one human completion upper bound. Speaker uses the original-recording clock from Base64 v1. Forty-seven Speaker tracks lack a causal target-activation marker after prior speech, so their first-stop status is unknown.</p>
+                <p>CPU decode time per prefix was 0.70 s at p50 and 1.83 s at p95. Live publication and controller latency remain unmeasured.</p>
+              </div>
+            </details>
+
+            <details class="method-note" id="asr-head-pairs">
+              <summary>Paired EOS Head cases and overlap</summary>
+              <h4 id="asr-head-pairs-title">Paired cases · ASR and EOS Head</h4>
+              <p>Eight anonymized examples from 128 same-track pairs. ASR uses physical-prefix Whisper Base with one confirmation. The Head is the selected <code>large_mean/best.pt</code> EOS_LATENT checkpoint at step 2000. Head outcomes cover the saved scoring horizon.</p>
+              <section id="asr-failure-overlap" aria-labelledby="asr-overlap-title">
+                <h5 id="asr-overlap-title">Do the failures overlap?</h5>
+                <p>A miss means the first trigger falls outside the reference completion block or no trigger occurs within the saved horizon. On RAVEN each method has its own reference axis: native blocks for the Head and published PCM blocks for ASR.</p>
+                <div class="table-box" tabindex="0" role="region" aria-labelledby="asr-overlap-title">
+                  <table>
+                    <thead><tr><th scope="col">Reference-block outcome</th><th scope="col">RAVEN</th><th scope="col">Speaker</th></tr></thead>
+                    <tbody>
+                      <tr><th scope="row">Scorable pairs</th><td>51 / 64</td><td>17 / 64</td></tr>
+                      <tr><th scope="row">ASR alone missed</th><td>16</td><td>4</td></tr>
+                      <tr><th scope="row">Head alone missed</th><td>7</td><td>9</td></tr>
+                      <tr><th scope="row">Both missed</th><td>2</td><td>1</td></tr>
+                      <tr><th scope="row">Either missed</th><td>25</td><td>14</td></tr>
+                      <tr><th scope="row">Overlap among misses</th><td>2 / 25 (8.0%)</td><td>1 / 14 (7.1%)</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p>In all three shared misses, both methods triggered early relative to their own references. Gender was annotated in 0 of 128 benchmark tracks, so concentration among men cannot be tested.</p>
+              </section>
+              <section aria-labelledby="asr-head-raven-title">
+                <h5 id="asr-head-raven-title">RAVEN · separate clocks</h5>
+                <p>ASR uses published PCM. The Head uses native feature content and the historical threshold 0.01494821608, selected post hoc on the same test set. Each method is scored against its own reference block. The saved feature-ready mapping is an audio availability snapshot. Relative decision timing remains unknown.</p>
+                <details class="method-note asr-pair" id="raven-pair-1" open>
+                  <summary>RAVEN pair 1 · Early / Exact reference block</summary>
+                  <p>Completion proxy <b>2.860 s</b> · Extra-speech onset proxy <b>3.840 s</b>.</p>
+                  <div class="table-box">
+                    <table aria-label="RAVEN pair 1">
+                      <thead><tr><th scope="col">Measurement</th><th scope="col">ASR</th><th scope="col">EOS Head</th></tr></thead>
+                      <tbody>
+                      <tr><th scope="row">Clock</th><td>Published pcm content</td><td>Native feature content</td></tr>
+                      <tr><th scope="row">First trigger</th><td>b4 · 2.792 s</td><td>b4 · 3.550 s</td></tr>
+                      <tr><th scope="row">Reference block</th><td>b5</td><td>b4</td></tr>
+                      <tr><th scope="row">Outcome</th><td>Early</td><td>Exact reference block</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="asr-note">Head has 5 saved score blocks. Safety proxy: Unknown across clocks. Published PCM available when the Head feature became ready: 2.083 s.</p>
+                </details>
+                <details class="method-note asr-pair" id="raven-pair-2">
+                  <summary>RAVEN pair 2 · Exact reference block / No trigger in saved horizon</summary>
+                  <p>Completion proxy <b>0.660 s</b> · Extra-speech onset proxy <b>Unknown</b>.</p>
+                  <div class="table-box">
+                    <table aria-label="RAVEN pair 2">
+                      <thead><tr><th scope="col">Measurement</th><th scope="col">ASR</th><th scope="col">EOS Head</th></tr></thead>
+                      <tbody>
+                      <tr><th scope="row">Clock</th><td>Published pcm content</td><td>Native feature content</td></tr>
+                      <tr><th scope="row">First trigger</th><td>b1 · 0.667 s</td><td>No trigger</td></tr>
+                      <tr><th scope="row">Reference block</th><td>b1</td><td>b0</td></tr>
+                      <tr><th scope="row">Outcome</th><td>Exact reference block</td><td>No trigger in saved horizon</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="asr-note">Head has 1 saved score blocks. Safety proxy: Unknown across clocks.</p>
+                </details>
+                <details class="method-note asr-pair" id="raven-pair-3">
+                  <summary>RAVEN pair 3 · Early / Early</summary>
+                  <p>Completion proxy <b>4.320 s</b> · Extra-speech onset proxy <b>Unknown</b>.</p>
+                  <div class="table-box">
+                    <table aria-label="RAVEN pair 3">
+                      <thead><tr><th scope="col">Measurement</th><th scope="col">ASR</th><th scope="col">EOS Head</th></tr></thead>
+                      <tbody>
+                      <tr><th scope="row">Clock</th><td>Published pcm content</td><td>Native feature content</td></tr>
+                      <tr><th scope="row">First trigger</th><td>b6 · 4.167 s</td><td>b4 · 3.550 s</td></tr>
+                      <tr><th scope="row">Reference block</th><td>b7</td><td>b6</td></tr>
+                      <tr><th scope="row">Outcome</th><td>Early</td><td>Early</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="asr-note">Head has 7 saved score blocks. Safety proxy: Unknown across clocks. Published PCM available when the Head feature became ready: 2.083 s.</p>
+                </details>
+                <details class="method-note asr-pair" id="raven-pair-4">
+                  <summary>RAVEN pair 4 · Unknown · human upper bound / Exact reference block</summary>
+                  <p>Completion upper bound <b>2.850 s</b> · Extra-speech onset proxy <b>3.680 s</b>.</p>
+                  <div class="table-box">
+                    <table aria-label="RAVEN pair 4">
+                      <thead><tr><th scope="col">Measurement</th><th scope="col">ASR</th><th scope="col">EOS Head</th></tr></thead>
+                      <tbody>
+                      <tr><th scope="row">Clock</th><td>Published pcm content</td><td>Native feature content</td></tr>
+                      <tr><th scope="row">First trigger</th><td>b3 · 2.083 s</td><td>b3 · 2.850 s</td></tr>
+                      <tr><th scope="row">Reference block</th><td>b5</td><td>b3</td></tr>
+                      <tr><th scope="row">Outcome</th><td>Unknown · human upper bound</td><td>Exact reference block</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="asr-note">Head has 4 saved score blocks. Safety proxy: Unknown across clocks. Published PCM available when the Head feature became ready: 1.375 s.</p>
+                </details>
+              </section>
+              <section aria-labelledby="asr-head-speaker-title">
+                <h5 id="asr-head-speaker-title">Speaker · original PCM content clock</h5>
+                <p>Both methods use original PCM content time. The Head threshold is fixed at 0.5. Among 17 scorable pairs, both hit the reference block in 3, ASR alone in 9, the Head alone in 4, and neither in 1. The other 47 lack a causal activation marker. Wall-clock decision timing remains unverified.</p>
+                <details class="method-note asr-pair" id="speaker-pair-5" open>
+                  <summary>Speaker pair 1 · Early / Exact reference block</summary>
+                  <p>Completion proxy <b>5.080 s</b> · Extra-speech onset proxy <b>6.410 s</b>.</p>
+                  <div class="table-box">
+                    <table aria-label="Speaker pair 1">
+                      <thead><tr><th scope="col">Measurement</th><th scope="col">ASR</th><th scope="col">EOS Head</th></tr></thead>
+                      <tbody>
+                      <tr><th scope="row">Clock</th><td>Original pcm content</td><td>Original pcm content</td></tr>
+                      <tr><th scope="row">First trigger</th><td>b6 · 4.975 s</td><td>b7 · 5.675 s</td></tr>
+                      <tr><th scope="row">Reference block</th><td>b7</td><td>b7</td></tr>
+                      <tr><th scope="row">Outcome</th><td>Early</td><td>Exact reference block</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="asr-note">Head has 9 saved score blocks. Safety proxy: Safe by content frontier.</p>
+                </details>
+                <details class="method-note asr-pair" id="speaker-pair-6">
+                  <summary>Speaker pair 2 · Exact reference block / No trigger in saved horizon</summary>
+                  <p>Completion proxy <b>1.960 s</b> · Extra-speech onset proxy <b>3.340 s</b>.</p>
+                  <div class="table-box">
+                    <table aria-label="Speaker pair 2">
+                      <thead><tr><th scope="col">Measurement</th><th scope="col">ASR</th><th scope="col">EOS Head</th></tr></thead>
+                      <tbody>
+                      <tr><th scope="row">Clock</th><td>Original pcm content</td><td>Original pcm content</td></tr>
+                      <tr><th scope="row">First trigger</th><td>b2 · 2.125 s</td><td>No trigger</td></tr>
+                      <tr><th scope="row">Reference block</th><td>b2</td><td>b2</td></tr>
+                      <tr><th scope="row">Outcome</th><td>Exact reference block</td><td>No trigger in saved horizon</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="asr-note">Head has 4 saved score blocks. Safety proxy: No trigger in saved horizon.</p>
+                </details>
+                <details class="method-note asr-pair" id="speaker-pair-7">
+                  <summary>Speaker pair 3 · Early / Early</summary>
+                  <p>Completion proxy <b>5.960 s</b> · Extra-speech onset proxy <b>6.460 s</b>.</p>
+                  <div class="table-box">
+                    <table aria-label="Speaker pair 3">
+                      <thead><tr><th scope="col">Measurement</th><th scope="col">ASR</th><th scope="col">EOS Head</th></tr></thead>
+                      <tbody>
+                      <tr><th scope="row">Clock</th><td>Original pcm content</td><td>Original pcm content</td></tr>
+                      <tr><th scope="row">First trigger</th><td>b7 · 5.675 s</td><td>b5 · 4.250 s</td></tr>
+                      <tr><th scope="row">Reference block</th><td>b8</td><td>b8</td></tr>
+                      <tr><th scope="row">Outcome</th><td>Early</td><td>Early</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="asr-note">Head has 9 saved score blocks. Safety proxy: Before completion.</p>
+                </details>
+                <details class="method-note asr-pair" id="speaker-pair-8">
+                  <summary>Speaker pair 4 · Unknown target activation / Early (legacy)</summary>
+                  <p>Completion proxy <b>10.240 s</b> · Extra-speech onset proxy <b>10.710 s</b>.</p>
+                  <div class="table-box">
+                    <table aria-label="Speaker pair 4">
+                      <thead><tr><th scope="col">Measurement</th><th scope="col">ASR</th><th scope="col">EOS Head</th></tr></thead>
+                      <tbody>
+                      <tr><th scope="row">Clock</th><td>Original pcm content</td><td>Original pcm content</td></tr>
+                      <tr><th scope="row">First trigger</th><td>b14 · 10.625 s</td><td>b7 · 5.675 s</td></tr>
+                      <tr><th scope="row">Reference block</th><td>b14</td><td>b14</td></tr>
+                      <tr><th scope="row">Outcome</th><td>Unknown target activation</td><td>Early (legacy)</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="asr-note">Head has 15 saved score blocks. Safety proxy: Unknown activation.</p>
+                </details>
+              </section>
+            </details>
+
+            <details class="method-note" id="asr-failures">
+              <summary>ASR failure and unknown cases</summary>
+              <h4 id="asr-failure-title">Failure and unknown cases</h4>
+              <p>Anonymous diagnostics from the physical-prefix run. Source media and transcripts are available in the private review.</p>
+              <div class="pair">
+                <article class="panel">
+                  <small>RAVEN 1 · 1 confirmation</small>
+                  <h5>Late after extra speech</h5>
+                  <p>The match came after the extra-speech boundary. It still landed on the exact reference block.</p>
+                  <p>Completion reference <b>1.580 s</b> · Trigger <b>2.083 s</b></p>
+                </article>
+                <article class="panel">
+                  <small>RAVEN 2 · 1 confirmation</small>
+                  <h5>Early</h5>
+                  <p>The match came before the frozen completion proxy.</p>
+                  <p>Completion reference <b>2.860 s</b> · Trigger <b>2.792 s</b></p>
+                </article>
+                <article class="panel">
+                  <small>RAVEN 3 · 1 confirmation</small>
+                  <h5>Unknown reference</h5>
+                  <p>The reference could not establish when the line ended.</p>
+                  <p>Completion reference <b>unknown</b> · Trigger <b>none</b></p>
+                </article>
+                <article class="panel">
+                  <small>RAVEN 4 · 1 confirmation</small>
+                  <h5>Unknown completion time</h5>
+                  <p>Human review established a completion upper bound. An earlier trigger is inconclusive.</p>
+                  <p>Completion upper bound <b>2.850 s</b> · Trigger <b>2.083 s</b></p>
+                </article>
+                <article class="panel">
+                  <small>Speaker 5 · 1 confirmation</small>
+                  <h5>Early</h5>
+                  <p>The match came before the frozen completion proxy.</p>
+                  <p>Completion reference <b>5.080 s</b> · Trigger <b>4.975 s</b></p>
+                </article>
+                <article class="panel">
+                  <small>Speaker 6 · 1 confirmation</small>
+                  <h5>Unknown target activation</h5>
+                  <p>Prior speech preceded the target. The trigger cannot be assigned to the intended turn.</p>
+                  <p>Completion reference <b>10.240 s</b> · Trigger <b>10.625 s</b></p>
+                </article>
+                <article class="panel">
+                  <small>Speaker 7 · 2 confirmations</small>
+                  <h5>Late after extra speech</h5>
+                  <p>A second stable confirmation arrived after additional speech began.</p>
+                  <p>Completion reference <b>5.960 s</b> · Trigger <b>9.925 s</b></p>
+                </article>
+                <article class="panel">
+                  <small>RAVEN 8 · Exact words</small>
+                  <h5>No trigger</h5>
+                  <p>The exact-word rule never matched in the tested prefixes.</p>
+                  <p>Completion reference <b>1.740 s</b> · Trigger <b>none</b></p>
+                </article>
+              </div>
+            </details>
           </div>
-        </section>
+          <details class="method-note" id="checkpoint-archive" data-experiment-day="17" hidden>
+            <summary>Checkpoint archive and threshold replay</summary>
+            <details class="method-note evaluation-method">
+              <summary>Protocol and reference results</summary>
+              <div class="method-body">
+                <p>RAVEN Base52 has 52 scorable tracks and 12 unknowns from 64 attempts. Speaker Base64 has 64 distinct source videos (22 short, 21 medium, 21 long); 16 have a full post-completion block. A hit lands on the proxy target block. Missed means no trigger in the observed window.</p>
+                <p>RAVEN fixed 0.07: scale5000, step 1937, 44/52 hits, 0 early, 8 missed. Speaker best post-hoc: large_mean step 2000, 25/64 hits, 17 early, 22 missed. Its best zero-early post-hoc operating point gives 5/64 hits and 59 missed.</p>
+                <p>The default matrix excludes 32 BPE-to-unit-pooled diagnostics, including Content step 200 (45/52). Speaker has 39 entries without compatible HIDDEN features. Threshold 0.01494821608 on RAVEN yields 43/52, 42/52 and 39/52 for large_mean, scale5000 and small_mean, with 5, 7 and 1 early stops respectively.</p>
+              </div>
+            </details>
+            <div class="matrix panel">
+              <div class="matrix-title"><h3>Checkpoints</h3><a href="models.json" download="eos-evaluation-models.json">Download data</a></div>
+              <div class="filters">
+                <label>Dataset<select id="domain"><option value="raven">RAVEN · Base52</option><option value="speaker">Speaker · Base64</option></select></label>
+                <label>Threshold<select id="mode"></select></label>
+                <label>Family<select id="family"><option value="">All families</option></select></label>
+                <label>Checkpoint or step<input id="search" type="search" placeholder="e.g. 1937 or large_mean"></label>
+              </div>
+              <div class="matrix-toolbar"><label class="check"><input id="matched" type="checkbox" checked>Matched representations only</label><span id="count" aria-live="polite"></span></div>
+              <div class="table-box" tabindex="0" role="region" aria-label="Checkpoint results">
+                <table><thead><tr><th>Checkpoint</th><th>Step</th><th>τ</th><th>Hits</th><th>Early</th><th>Late</th><th>Missed</th><th>Features</th></tr></thead><tbody id="results"></tbody></table>
+              </div>
+              <div class="pager"><button id="previous" type="button">Previous</button><span id="page"></span><button id="next" type="button">Next</button></div>
+              <p id="load-error" hidden role="alert">Could not load evaluation data. Refresh to retry.</p>
+            </div>
+            <div class="panel probe" id="thresholds">
+              <div class="matrix-title"><h3>Threshold replay</h3><a id="curve-data" href="curves-raven.json" download>Download curve</a></div>
+              <div id="curve" hidden>
+                <div class="curve-title"><strong id="curve-model"></strong><output id="tau"></output></div>
+                <label class="slider">Saved threshold<input type="range" min="0" value="0" id="threshold" step="1"></label>
+                <div class="curve-bar" id="curve-bar" role="img" aria-label=""></div>
+                <div class="legend" id="curve-legend"></div>
+              </div>
+              <p id="curve-state" aria-live="polite">Select a checkpoint.</p>
+            </div>
+          </details>
+        </div>
       </div>
-
-      <details class="method-note evaluation-method">
-        <summary>Protocol and reference results</summary>
-        <div class="method-body">
-          <p>RAVEN Base52 has 52 scorable tracks and 12 unknowns from 64 attempts. Speaker Base64 has 64 distinct source videos (22 short, 21 medium, 21 long); 16 have a full post-completion block. A hit lands on the proxy target block. Missed means no trigger in the observed window.</p>
-          <p>RAVEN fixed 0.07: scale5000, step 1937, 44/52 hits, 0 early, 8 missed. Speaker best post-hoc: large_mean step 2000, 25/64 hits, 17 early, 22 missed. Its best zero-early post-hoc operating point gives 5/64 hits and 59 missed.</p>
-          <p>The default matrix excludes 32 BPE-to-unit-pooled diagnostics, including Content step 200 (45/52). Speaker has 39 entries without compatible HIDDEN features. Threshold 0.01494821608 on RAVEN yields 43/52, 42/52 and 39/52 for large_mean, scale5000 and small_mean, with 5, 7 and 1 early stops respectively.</p>
-        </div>
-      </details>
-      <div class="matrix panel">
-        <div class="matrix-title"><h3>Checkpoints</h3><a href="models.json" download="eos-evaluation-models.json">Download data</a></div>
-        <div class="filters">
-          <label>Dataset<select id="domain"><option value="raven">RAVEN · Base52</option><option value="speaker">Speaker · Base64</option></select></label>
-          <label>Threshold<select id="mode"></select></label>
-          <label>Family<select id="family"><option value="">All families</option></select></label>
-          <label>Checkpoint or step<input id="search" type="search" placeholder="e.g. 1937 or large_mean"></label>
-        </div>
-        <div class="matrix-toolbar"><label class="check"><input id="matched" type="checkbox" checked>Matched representations only</label><span id="count" aria-live="polite"></span></div>
-        <div class="table-box" tabindex="0" role="region" aria-label="Checkpoint results">
-          <table><thead><tr><th>Checkpoint</th><th>Step</th><th>τ</th><th>Hits</th><th>Early</th><th>Late</th><th>Missed</th><th>Features</th></tr></thead><tbody id="results"></tbody></table>
-        </div>
-        <div class="pager"><button id="previous" type="button">Previous</button><span id="page"></span><button id="next" type="button">Next</button></div>
-        <p id="load-error" hidden role="alert">Could not load evaluation data. Refresh to retry.</p>
-      </div>
-      <div class="panel probe" id="thresholds">
-        <div class="matrix-title"><h3>Threshold replay</h3><a id="curve-data" href="curves-raven.json" download>Download curve</a></div>
-        <div id="curve" hidden>
-          <div class="curve-title"><strong id="curve-model"></strong><output id="tau"></output></div>
-          <label class="slider">Saved threshold<input type="range" min="0" value="0" id="threshold" step="1"></label>
-          <div class="curve-bar" id="curve-bar" role="img" aria-label=""></div>
-          <div class="legend" id="curve-legend"></div>
-        </div>
-        <p id="curve-state" aria-live="polite">Select a checkpoint.</p>
-      </div>
-    </section>
-
-    <section id="log">
-      <div class="section-head"><h2>Experiment log</h2><p>November 2026 · Beijing time</p></div>
-      <details class="method-note" id="log-details">
-        <summary>Browse daily records</summary>
-        <div class="log-layout"><nav id="days" aria-label="Log dates"></nav><article id="day" aria-live="polite"></article></div>
-      </details>
     </section>
     <section id="open">
       <div class="section-head"><h2>Open questions</h2></div>

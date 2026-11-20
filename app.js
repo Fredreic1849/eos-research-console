@@ -20,6 +20,7 @@ for (const [title, note] of openItems) {
 }
 
 const dayLinks = new Map();
+const experimentDetails = document.querySelectorAll("[data-experiment-day]");
 for (const [day] of [...logs].reverse()) {
   const anchor = make("a", `11-${day}`);
   anchor.href = `#day-2026-11-${day}`;
@@ -29,30 +30,48 @@ for (const [day] of [...logs].reverse()) {
 }
 function showDay(day) {
   const entry = logs.find(([date]) => date === day) || logs.at(-1);
-  const [date, title, work, result, open] = entry;
+  const [date, title, work, result, open, method] = entry;
   const timestamp = make("time", `2026-11-${date}`);
   timestamp.dateTime = timestamp.textContent;
   const facts = make("dl");
-  for (const [label, text] of [["Work", work], ["Result", result], ["Open", open]]) {
+  if (method) facts.append(make("dt", "Method"), make("dd", method));
+  for (const [label, text] of [[method ? "Experiment" : "Method / Experiment", work], ["Result", result], ["Open", open]]) {
     facts.append(make("dt", label), make("dd", text));
   }
   el("day").replaceChildren(timestamp, make("h3", title), facts);
+  experimentDetails.forEach((panel) => {
+    panel.hidden = panel.dataset.experimentDay !== date;
+  });
   dayLinks.forEach((link, key) => {
     if (key === date) link.setAttribute("aria-current", "date");
     else link.removeAttribute("aria-current");
   });
+  const selected = dayLinks.get(date);
+  const dates = el("days");
+  if (dates.scrollWidth > dates.clientWidth && selected) {
+    if (selected.offsetLeft < dates.scrollLeft) dates.scrollLeft = selected.offsetLeft;
+    else if (selected.offsetLeft + selected.offsetWidth > dates.scrollLeft + dates.clientWidth) {
+      dates.scrollLeft = selected.offsetLeft + selected.offsetWidth - dates.clientWidth;
+    }
+  }
 }
 function updateRoute() {
   const hash = location.hash || "#overview";
-  const date = hash.match(/^#day-2026-11-(\d{2})$/);
-  if (date || hash === "#log") el("log-details").open = true;
+  const date = hash.match(/^#day-2026-11-(\d{2})$/)?.[1];
   const target = document.getElementById(hash.slice(1));
-  if (target?.tagName === "DETAILS") target.open = true;
-  if (date && dayLinks.has(date[1])) {
-    showDay(date[1]);
-    el("log").scrollIntoView();
+  const panel = target?.closest("[data-experiment-day]");
+  const experimentRoute = hash === "#evaluation" || hash === "#log" || dayLinks.has(date) || panel;
+  if (experimentRoute) {
+    showDay(dayLinks.has(date) ? date : panel?.dataset.experimentDay);
+    for (let node = target; node && node !== el("evaluation"); node = node.parentElement) {
+      if (node.tagName === "DETAILS") node.open = true;
+    }
+    if (hash === "#asr-baseline") el("asr-tables").open = true;
+    requestAnimationFrame(() => (target || el("evaluation")).scrollIntoView());
+  } else if (target?.tagName === "DETAILS") {
+    target.open = true;
   }
-  const active = date || hash === "#log" ? "#log" : hash === "#evaluation" || hash === "#thresholds" || target?.closest(".asr-results") ? "#evaluation"
+  const active = experimentRoute ? "#evaluation"
     : ["#model", "#supervision", "#families", "#model-sources", "#training"].includes(hash) ? "#model" : "#overview";
   document.querySelectorAll(".site-nav a[data-section]").forEach((link) => {
     if (link.hash === active) link.setAttribute("aria-current", active === "#overview" ? "page" : "location");

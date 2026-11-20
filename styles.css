@@ -141,16 +141,17 @@ tbody td { font-variant-numeric: tabular-nums; }
 .slider input { width: 100%; }
 .curve-bar { height: 13px; }
 
-.log-layout { display: grid; grid-template-columns: 156px minmax(0, 1fr); padding: 0; gap: 17px; }
-.log-layout nav { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; align-content: start; padding: 11px; background: #edf1ed; }
-.log-layout nav a { border-radius: 5px; padding: 4px 6px; text-align: center; color: var(--muted); font-size: 13px; white-space: nowrap; text-decoration: none; }
-.log-layout nav a:hover, .log-layout nav a[aria-current] { background: #dceae2; color: var(--accent-dark); font-weight: 710; }
-.log-layout article { padding: 13px 12px 13px 0; }
-.log-layout h3 { margin: 5px 0 9px; }
-.log-layout time { color: var(--accent); font-size: 13px; font-weight: 700; }
-.log-layout dl { display: grid; grid-template-columns: 5em 1fr; gap: 5px 10px; margin: 0; }
-.log-layout dt { font-size: 13px; color: var(--ink); font-weight: 700; }
-.log-layout dd { font-size: 14px; font-weight: 400; color: var(--muted); }
+.log-layout { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 26px; }
+#days { position: sticky; top: 80px; align-self: start; display: grid; padding-right: 13px; border-right: 1px solid var(--line); }
+#days a { padding: 5px 6px; color: var(--muted); font-size: 14px; white-space: nowrap; text-decoration: none; }
+#days a:hover { text-decoration: underline; }
+#days a[aria-current] { color: #175aa8; font-weight: 700; }
+.experiment-day { min-width: 0; }
+#day h3 { margin: 2px 0 10px; font-size: 20px; }
+#day time { color: var(--muted); font-size: 13px; }
+#day dl { display: grid; grid-template-columns: 7.5em minmax(0, 1fr); gap: 7px 12px; margin: 0; font-size: 14px; }
+#day dt { font-weight: 700; }
+#day dd { color: var(--muted); }
 .open-grid article { min-width: 0; padding: 12px 0; border-top: 1px solid var(--line); }
 .open-grid p { margin-top: 4px; color: var(--muted); }
 footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 7px 12px; color: var(--muted); border-top: 1px solid var(--line); margin-top: 30px; padding: 12px 0; font-size: 13px; }
@@ -172,10 +173,10 @@ footer b { color: var(--ink); }
   .hero { padding-top: 0; gap: 15px; }
   .hero-chart { padding: 12px; }
   .panel { padding: 12px; }
-  .log-layout { padding: 0; grid-template-columns: 1fr; gap: 0; }
-  .log-layout nav { display: flex; overflow-x: auto; padding: 6px; }
-  .log-layout article { padding: 11px; }
-  .log-layout dl { grid-template-columns: 4em 1fr; gap: 5px; }
+  .log-layout { grid-template-columns: minmax(0, 1fr); gap: 11px; }
+  #days { position: relative; top: auto; display: flex; overflow-x: auto; padding: 0 0 5px; border-right: 0; border-bottom: 1px solid var(--line); }
+  #days a { flex: 0 0 auto; padding-inline: 9px; }
+  #day dl { grid-template-columns: 6.2em minmax(0, 1fr); gap: 7px; }
 }
 
 .section-links { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px 15px; }
